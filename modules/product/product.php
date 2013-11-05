@@ -51,15 +51,15 @@
 		}
 		
 		
-		/*protected function afterListLoad(&$list) {
+		protected function afterListLoad(&$list) {
 			imagePkgHelperLibrary::loadImages($list, 'images');
+			
 			foreach($list as $item) {
 				$image_id = isset($item->images[0]) ? $item->images[0]->id : 0;
-				$item->image_thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 60, 40, 'crop');
+				$item->image_thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 60, 60, 'crop', $image_id ? 'jpeg' : 'png');
 			}
-			
-		}*/
-		
+		}
+				
 		
 		/*protected function beforeObjectSave($object) {
 			parent::beforeObjectSave($object);

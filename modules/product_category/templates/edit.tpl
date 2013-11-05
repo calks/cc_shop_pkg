@@ -19,8 +19,9 @@
 	        <tr>
 	        	<td>
 		            <table summary="" class="edit">			            
+			            <tr><th>Активен :</th><td>{$form->render('active')}</td></tr>
 			            <tr><th>Название *:</th><td>{$form->render('title')}</td></tr>
-			            <tr><th>Активен :</th><td>{$form->render('active')}</td></tr>			            
+			            <tr><th>Картинка :</th><td>{$form->render('image')}</td></tr>			            			            
 		            </table>	
 	            	<br>
 	            	* - обязательное поле

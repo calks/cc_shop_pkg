@@ -39,7 +39,14 @@
             	'options' => $category->getSelect('-- Не выбран --')
             )));
             
-            $form->addField(new THiddenField("seq"));            
+            $form->addField(new THiddenField("seq"));
+
+			$form->addField(imagePkgHelperLibrary::getField('image', $this->getName(), $this->id, array(			
+				'width' => 600,
+				'height' => 100,
+				'max_files' => 1
+			)));
+            
             
             return $form;
         }		
@@ -62,7 +69,13 @@
         
         public function save() {
         	$this->price = (float)$this->price;
-        	return parent::save();
+        	
+        	$id = parent::save();
+			if ($id) {				
+				imagePkgHelperLibrary::commitUploadedFiles(Request::get('image'), $id);				
+			}
+        	
+        	return $id;
         }
         
         

@@ -8,6 +8,7 @@
     
     <table class="list" id="hover" summary="">
 	    <tr>
+	    	<th>Картинка</th>
 	        <th>Название</th>
 	        <th>Товары</th>        
 	        <th>Активен</th>
@@ -29,6 +30,9 @@
 	            {assign var='down' value="1"}
 	        {/if}
 		    <tr class="{cycle values='odd,even'}">
+	        	<td class="delete">
+	        		<img src="{$object->image_thumbnail}" alt="" >
+	        	</td>
 	        	<td>
 	        		{$object->title}
 	        	</td>

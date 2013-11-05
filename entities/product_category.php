@@ -27,6 +27,13 @@
             $form->addField(coreFormElementsLibrary::get('checkbox', 'active', array(
             	'value' => 1
             )));
+            
+			$form->addField(imagePkgHelperLibrary::getField('image', $this->getName(), $this->id, array(			
+				'width' => 600,
+				'height' => 100,
+				'max_files' => 1
+			)));
+            
             return $form;
         }
 		
@@ -44,5 +51,15 @@
         	foreach($data as $item) $out[$item->id] = $item->title;
         	return $out;
         }
+        
+        
+        public function save() {
+        	$id = parent::save();
+			if ($id) {				
+				imagePkgHelperLibrary::commitUploadedFiles(Request::get('image'), $id);				
+			}        	
+        	return $id;
+        }
+        
         
 	}

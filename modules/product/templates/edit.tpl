@@ -25,11 +25,12 @@
 			            <tr><th>Описание :</th><td>{$form->render('description')}</td></tr>			            
 			            <tr>
 			            	<th>Аудиофайл *:</th>
-			            	<td>
-			            		{$form->render('audio')}
-			            	</td>
+			            	<td>{$form->render('audio')}</td>
 			            </tr>
-			            
+			            <tr>
+			            	<th>Картинка :</th>
+			            	<td>{$form->render('image')}</td>
+			            </tr>
 		            </table>	
 	            	<br>
 	            	* - обязательное поле

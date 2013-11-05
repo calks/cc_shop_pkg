@@ -19,6 +19,7 @@
     
     <table class="list" id="hover" summary="">
 	    <tr>
+	    	<th>Картинка</th>
 	        <th>Раздел</th>
 	        <th>Название</th>
 	        <th>Цена</th>
@@ -42,6 +43,9 @@
 	            {assign var='down' value="1"}
 	        {/if}		
 		    <tr class="{cycle values='odd,even'}">
+	        	<td class="delete">
+	        		<img src="{$object->image_thumbnail}" alt="" >
+	        	</td>
 		        <td>
 		        	{if $object->product_category_title}{$object->product_category_title}{else}Не выбран{/if}
 		        </td>	  
