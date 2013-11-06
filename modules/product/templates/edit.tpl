@@ -19,17 +19,18 @@
 	        <tr>
 	        	<td>
 		            <table summary="" class="edit">
+		            	<tr><th>Активен :</th><td>{$form->render('active')}</td></tr>
 		            	<tr><th>Раздел *:</th><td>{$form->render('product_category_id')}</td></tr>
 			            <tr><th>Название *:</th><td>{$form->render('title')}</td></tr>
 			            <tr><th>Цена *:</th><td>{$form->render('price')}</td></tr>
 			            <tr><th>Описание :</th><td>{$form->render('description')}</td></tr>			            
 			            <tr>
-			            	<th>Аудиофайл *:</th>
-			            	<td>{$form->render('audio')}</td>
-			            </tr>
-			            <tr>
 			            	<th>Картинка :</th>
 			            	<td>{$form->render('image')}</td>
+			            </tr>
+			            <tr>
+			            	<th>Аудиофайл *:</th>
+			            	<td>{$form->render('audio')}</td>
 			            </tr>
 		            </table>	
 	            	<br>

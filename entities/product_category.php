@@ -2,6 +2,7 @@
 
 	class shopPkgProductCategoryEntity extends coreBaseEntity {
 		public $title;		
+		public $description;
 		public $seq;
 		public $active;
 		
@@ -24,6 +25,7 @@
             $form->addField(new THiddenField("id"));
             $form->addField(new THiddenField("seq"));
             $form->addField(coreFormElementsLibrary::get('edit', 'title'));
+            $form->addField(coreFormElementsLibrary::get('rich_editor', 'description'));
             $form->addField(coreFormElementsLibrary::get('checkbox', 'active', array(
             	'value' => 1
             )));

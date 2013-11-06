@@ -29,7 +29,7 @@
         	
         	$form->addField(coreFormElementsLibrary::get('edit', 'price'));
             $form->addField(coreFormElementsLibrary::get('edit', 'title'));
-            $form->addField(coreFormElementsLibrary::get('text', 'description'));
+            $form->addField(coreFormElementsLibrary::get('rich_editor', 'description'));
             $form->addField(coreFormElementsLibrary::get('checkbox', 'active', array(
             	'value' => 1
             )));
