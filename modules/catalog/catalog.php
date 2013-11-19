@@ -18,11 +18,7 @@
     	protected $page_content;
 
         public function run($params=array()) {
-
-			$static_dir = Application::getModuleUrl($this->getName()) . '/static';
-			
 			$page = Application::getPage();
-			//$page->AddStylesheet("$static_dir/css/gallery.css");
 			
 			$this->base_url = '/' . $this->getName();
 			$this->action = 'list';
