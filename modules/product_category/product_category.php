@@ -32,19 +32,6 @@
 			}
 		}
 		
-		
-		/*protected function beforeObjectSave($object) {
-			parent::beforeObjectSave($object);
-			
-			$image_field_hash = $this->form->getValue('image');
-			$image_uploaded = imagePkgHelperLibrary::getFilesCount($image_field_hash) > 0;
-			
-			if (!$image_uploaded) {
-				$this->errors[] = "Нужно загрузить картинку";
-			}
-		}*/
-		
-		
 				
 		
 	}
