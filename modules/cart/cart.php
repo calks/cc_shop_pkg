@@ -14,6 +14,8 @@
 		
 		public function run($params=array()) {
 			
+			shopPkgHelperLibrary::getPaymentInterfaceConnector('robokassa');
+			
 			$this->task = @array_shift($params);
 			if (!$this->task) $this->task = 'list_content';
 			

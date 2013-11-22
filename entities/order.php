@@ -19,6 +19,11 @@
 			return 'order';
 		}
 		
+		
+		public function order_by() {
+			return 'created DESC';
+		}
+		
 		public function getStatusOptions() {
 			return array(
 				'new' => 'Новый',
@@ -26,11 +31,11 @@
 			);
 		}
 		
-		public function save() {
+		public function save() {			
 			if (!$this->created) $this->created = date("Y-m-d H:i:s");
-			if (!$this->items) return null;
 			
-			$is_new = !$this->id; 
+			$is_new = !$this->id;			
+			if ($is_new && !$this->items) return null;
 			
 			$id = parent::save();
 			

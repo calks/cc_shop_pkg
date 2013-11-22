@@ -32,6 +32,11 @@
 			return count($this->_products) == 0;
 		}
 		
+		public function clear() {
+			$this->_products = array();
+			$this->save();
+		}
+		
 		public function remove($product_id) {
 			if (!$this->isInCart($product_id)) return;			
 			unset($this->_products[$product_id]);

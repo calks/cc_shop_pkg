@@ -18,7 +18,7 @@
 		public function load_list($params=array()) {
 			$table = $this->getTableName();
 			$product = Application::getEntityInstance('product');
-			$product_table = $user->getTableName();
+			$product_table = $product->getTableName();
 			$product_alias = 't_' . md5(uniqid());
 			
 			$params['from'][] = "

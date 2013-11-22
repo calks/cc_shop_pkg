@@ -42,6 +42,7 @@
 		
 		</table>
 		
+		<br />
 		<a class="button-more" href="{$checkout_link}">Оформить заказ</a>
 	
 	{/if}
