@@ -44,5 +44,8 @@
 		
 		<br />
 		<a class="button-more" href="{$checkout_link}">Оформить заказ</a>
+		{if $continue_link}
+			<a class="button-more" href="{$continue_link}">Вернуться к покупкам</a>
+		{/if}	
 	
 	{/if}

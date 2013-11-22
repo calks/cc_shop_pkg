@@ -33,8 +33,10 @@
 					
 					<div class="pos-bottom">
 						<div class="element element-itemtag  first">
-							<h3>{$item->price_str}</h3>
-							<a class="buy" href="{$item->buy_link}">купить</a>
+							<h3>
+								{$item->price_str}
+								<a class="button-more buy" href="{$item->buy_link}">купить</a>
+							</h3>
 						</div>
 					</div>
 						

@@ -21,6 +21,7 @@
 			
 			$method_name = coreNameUtilsLibrary::underscoredToCamel('task_' . $this->task);
 			if (method_exists($this, $method_name)) {
+				$this->setContinueLink();
 				call_user_func(array($this, $method_name), $params);
 			} 
 			else {
@@ -97,6 +98,7 @@
 			$smarty->assign('cart_subtotal_str', $subtotal_str);
 			
 			$smarty->assign('checkout_link', Application::getSeoUrl("/checkout"));
+			$smarty->assign('continue_link', $this->getContinueLink());
 			
 			$template_path = $this->getTemplatePath($this->task);
 			$this->content = $smarty->fetch($template_path);
@@ -153,7 +155,49 @@
 		protected function taskUpdate($params=array()) {
 			
 		}
+		
+
+		protected function getContinueLinkSessionKey() {
+			return 'continue_' . md5(__FILE__);
+		}
+		
+		
+		protected function setContinueLink() {
 			
+			$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+			if (!$referer) return;
+			
+			if (!preg_match('/^http(s)?:\/\/(?<domain>[a-z0-9\.\-_]+)\/(?<path>.*)/is', $referer, $matches)) return;
+			
+			$domain = isset($matches['domain']) ? $matches['domain'] : '';
+			$path = isset($matches['path']) ? $matches['path'] : '';
+			
+			if ($domain != $_SERVER['HTTP_HOST']) return;
+			
+			if (!$path) {
+				$continue_link = '/';
+			}
+			else {
+				$module_name = array_shift(explode('/', $path));				
+				if (!in_array($module_name, array('cart', 'checkout'))) {
+					$continue_link = $referer;
+				}
+				else {
+					$continue_link = null;
+				}
+			}
+			
+			if ($continue_link) {
+				$session_key = $this->getContinueLinkSessionKey();
+				$_SESSION[$session_key] = $continue_link;
+			}
+
+		}
+			
+		protected function getContinueLink() {
+			$session_key = $this->getContinueLinkSessionKey();
+			return isset($_SESSION[$session_key]) ? $_SESSION[$session_key] : '';
+		}
 		
 	}
 	
