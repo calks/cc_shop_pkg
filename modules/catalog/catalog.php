@@ -21,13 +21,14 @@
 			$page = Application::getPage();
 			
 			$this->base_url = '/' . $this->getName();
+			
 			$this->action = 'list';
 			$this->listed_entity_name = 'product_category';
 			
 			$this->page_heading = "Каталог";
 			
 			$breadcrumbs = Application::getBreadcrumbs();
-			$breadcrumbs->addNode(Application::getSeoUrl($this->base_url), $this->page_heading);
+			$breadcrumbs->addNode($this->base_url, $this->page_heading);
 			
 			$document = corePagePropertiesHelperLibrary::getDocument();			
 			if ($document) {
@@ -45,7 +46,7 @@
 				$this->listed_entity_name = 'product';
 				$this->page_heading = $this->product_category->title;
 				$this->page_content = $this->product_category->description;
-				$breadcrumbs->addNode(Application::getSeoUrl($this->base_url), $this->page_heading);
+				$breadcrumbs->addNode($this->base_url, $this->page_heading);
 				
 				$this->product_id = @(int)array_shift($params);
 				if ($this->product_id) {
@@ -58,7 +59,7 @@
 					$this->action = 'detail';
 					$this->page_heading = $this->product->title;
 					$this->page_content = $this->product->description;
-					$breadcrumbs->addNode(Application::getSeoUrl($this->base_url), $this->page_heading);
+					$breadcrumbs->addNode($this->base_url, $this->page_heading);
 				}
 			}
 			
