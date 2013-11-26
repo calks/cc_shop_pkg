@@ -27,13 +27,19 @@
 		
 		
 		protected function beforeListLoad(&$load_params) {
-			if (!$this->for_user) return;
-			
-			$entity = Application::getEntityInstance($this->getObjectName());
-			$table = $entity->getTableName();
-			$load_params['where'][] = "$table.user_id={$this->for_user->id}";
 			$smarty = Application::getSmarty();
-			$smarty->assign('subtitle', "Заказы пользователя {$this->for_user->name} {$this->for_user->family_name}");
+			
+			$filter = Application::getFilter($this->getObjectName());
+			$smarty->assign('filter', $filter);
+			$filter->set_params($load_params);
+			
+			if ($this->for_user) {			
+				$entity = Application::getEntityInstance($this->getObjectName());
+				$table = $entity->getTableName();
+				$load_params['where'][] = "$table.user_id={$this->for_user->id}";				
+				$smarty->assign('subtitle', "Заказы пользователя {$this->for_user->name} {$this->for_user->family_name}");
+			}
+			
 			
 		}
 		
