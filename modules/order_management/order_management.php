@@ -66,6 +66,9 @@
 			$object = $this->objects[0];
 			shopPkgHelperLibrary::loadOrderItems($object);
 			
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$object->payment_log = htmlspecialchars($payment_connector->readLog($object->id)); 
+			
 			foreach($object->items as $i) {
 				$i->product_link = $i->product_id ? Application::getSeoUrl("/product?action=edit&ids[]=$i->product_id") : '';
 			}

@@ -17,11 +17,11 @@
 			            <tr><th>Сумма :</th><td>{$object->amount_str}</td></tr>
 			            <tr><th>Статус :</th><td>{$object->status_str}</td></tr>
 			            <tr>
-			            	<th>Товары:</th>
+			            	<th valign="top">Товары:</th>
 			            	<td>
 							    <table class="list" id="hover" summary="">
 								    <tr>
-								    	<th></th>
+								    	<th style="width: 120px"></th>
 								    	<th>Наименование</th>
 								    	<th>Цена</th>
 								        <th>Количество</th>
@@ -43,11 +43,23 @@
 									        <td>{$item->quantity}</td>
 									        <td>{$item->cost_str}</td>
 									    </tr>
-									{/foreach}			            	
-
+									{/foreach}
 								</table>
 			            	</td>
 			            </tr>
+						{if $object->payment_log}
+							<tr>
+								<th valign="top">
+									<br />Платежи :
+								</th>
+								<td>
+									<div style="max-width: 800px; overflow: scroll">
+										<pre>{$object->payment_log}</pre>
+									</div>	
+								</td>
+							</tr>
+						{/if}			            	
+			            
 		            </table>	
 	            	<br>
 	            	

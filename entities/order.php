@@ -27,7 +27,9 @@
 		public function getStatusOptions() {
 			return array(
 				'new' => 'Новый',
-				'payed' => 'Оплачен'
+				'payed' => 'Оплачен',
+				'processing' => 'Обрабатывается',
+				'canceled' => 'Отменен'
 			);
 		}
 		

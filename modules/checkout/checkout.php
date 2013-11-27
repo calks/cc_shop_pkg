@@ -6,7 +6,10 @@
 		
 		protected $status;
 		protected $content;
-		protected $user_logged;
+		protected $user_logged;		
+		
+		protected $payment_response;
+		protected $order;
 		
 		protected function isAjaxRequest() {
 			return isset($_POST['ajax']) && $_POST['ajax'] = 1;
@@ -16,24 +19,28 @@
 
 			$user_session = Application::getUserSession();
 			$this->user_logged = $user_session->getUserAccount();
+
+			$this->task = @array_shift($params);
+			if (!$this->task) $this->task = 'review';
+			
+			$back_url = Application::getSeoUrl("/{$this->getName()}/$this->task");
+			$login_redirect_url = Application::getSeoUrl("/login?back=" . rawurlencode($back_url));
 			
 			if (!$this->user_logged) {
 				Application::stackWarning("Для оформления заказа вы должны войти на сайт или зарегистрироваться");
-				Redirector::redirect(Application::getSeoUrl("/login"));
+				Redirector::redirect($login_redirect_url);
 			}
 			
 			if (!in_array(USER_ROLE_CONSUMER, $this->user_logged->roles)) {
 				Application::stackWarning("Для оформления заказа необходимо зайти на сайт как покупатель");
-				$user_session->logout();
-				Redirector::redirect(Application::getSeoUrl("/login"));
+				$user_session->logout();				
+				Redirector::redirect($login_redirect_url);
 			}
 			
 			
-			$this->task = @array_shift($params);
-			if (!$this->task) $this->task = 'review';
-			
 			$method_name = coreNameUtilsLibrary::underscoredToCamel('task_' . $this->task);
-			if (method_exists($this, $method_name)) {
+			
+			if (method_exists($this, $method_name)) {				
 				call_user_func(array($this, $method_name), $params);
 			} 
 			else {
@@ -58,7 +65,6 @@
 			$status = 'ok';
 			if ($this->warnings) $status = 'warning';
 			if ($this->errors) $status = 'error';
-			
 			$message_stack = Application::getMessageStack();
 			
 			$out = array(
@@ -127,11 +133,12 @@
 			}
 			
 			
-			$order = $this->createNewOrder($cart);
-			if ($order->save()) {
+			$this->order = $this->createNewOrder($cart);
+			if ($this->order->save()) {
 				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
-				$redirect_url = $payment_connector->getPaymentUrl($order, 'Заказ в интернет-магазине');
-				Redirector::redirect($redirect_url);
+				$payment_url = $payment_connector->getPaymentUrl($this->order, 'Заказ в интернет-магазине #' . $this->order->id);
+				$payment_connector->writeLog($this_order->id, "Пользователь отправлен на оплату \n $payment_url");
+				Redirector::redirect($payment_url);				
 			}
 			else {
 				Application::stackError("Не удалось сохранить заказ");
@@ -139,84 +146,176 @@
 			}
 		}
 		
+		protected function processPaymentReturnUrl($url_type) {
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			
+			switch ($url_type) {
+				case 'success':
+					$this->payment_response = $payment_connector->parseSuccessParams();
+					break;
+				case 'fail':
+					$this->payment_response = $payment_connector->parseFailParams();
+					break;
+				default:
+					Application::stackError("Внутренняя ошибка");
+					Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));
+			}
+			
+
+			if (!$this->payment_response->is_valid) {
+				Application::stackError("Недостоверные данные");
+				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));
+			}
+			
+			$order_id = $this->payment_response->order_id;
+			$this->order = Application::getEntityInstance('order');
+			$this->order = $this->order->load($order_id);
+			
+			if (!$this->order) {
+				Application::stackError("Заказ не найден");
+				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));				
+			}
+		}
 		
 		protected function taskSuccess($params=array()) {
+			$this->processPaymentReturnUrl('success');
 			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
-			$response = $payment_connector->parseSuccessParams();
-
-			if (!$response->is_valid) {
-				Application::stackError("Недостоверные данные");
-				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));
+			
+			if ($this->successChangeOrder()) {
+				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
+				return $this->successShowResult();	
+			}
+			else {
+				$payment_connector->writeLog($this->order->id, "Не удалось изменить статус заказа на {$this->order->status}.");
+				return $this->successShowError();
+			}
+		}
+		
+		protected function successChangeOrder() {
+			$new_order_status = $this->order->status; 
+			
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$payment_status = $payment_connector->queryPaymentStatus($this->order);
+			// если у нас получилось запросить статус заказа асинхронно...
+			if ($payment_status->result == 'ok') {
+				if ($payment_status->order_status) {
+					$new_order_status = $payment_status->order_status;					
+				}	
+			}
+			// если не получилось, считаем, что заказ оплачен 
+			// (к этому моменту мы уже знаем, что на suceess url пришли достоверные данные)
+			else {
+				$new_order_status = 'payed';
 			}
 			
-			$order_id = $response->order_id;
-			$order = Application::getEntityInstance('order');
-			$order = $order->load($order_id);
-			
-			if (!$order) {
-				Application::stackError("Заказ не найден");
-				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));				
+			// если статус заказа изменился, сохраняем
+			if ($new_order_status != $this->order->status) {
+				$this->order->status = $new_order_status;
+				return $this->order->save();					
 			}
-			
-			$new_status = 'payed';
-			$order_statuses = $order->getStatusOptions();
-			$new_status_str = isset($order_statuses[$new_status]) ? $order_statuses[$new_status] : $new_status;
-			
-			$order->status = $new_status;
-			if (!$order->save()) {
-				Application::stackError("Не удалось перевести заказ в статус &laquo;$new_status_str&raquo;");
-				die();
-				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));
+			// если нет, то ничего не делаем
+			else {
+				$payment_connector->writeLog($this->order->id, "Заказ в статусе $new_order_status. Не меняем.");
+				return $this->order->id;
 			}
-			
+		}
+		
+		
+		protected function successShowResult() {
 			$cart = shopPkgHelperLibrary::getCartInstance();
 			$cart->clear();
-			Application::stackMessage("Ваш заказ переведен в статус &laquo;$new_status_str&raquo;. Спасибо за покупку.");
+			
+			$new_status = $this->order->status;			
+			Application::stackMessage($this->getUserMessage($new_status));
 			Redirector::redirect(Application::getSeoUrl("/profile/orders"));
 		}
 		
-				
-		protected function taskFail($params=array()) {
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
-			$response = $payment_connector->parseSuccessParams();
-
-			if (!$response->is_valid) {
-				Application::stackError("Недостоверные данные");
-				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));
+		
+		protected function getUserMessage($order_status) {
+			$order_statuses = $this->order->getStatusOptions();
+			$order_status_str = isset($order_statuses[$order_status]) ? $order_statuses[$order_status] : $order_status;
+			
+			switch ($order_status) {
+				case 'payed':
+					return "Ваш заказ переведен в статус &laquo;$new_status_str&raquo;. Спасибо за покупку.";
+				case 'processing':
+					return "Ваш заказ переведен в статус &laquo;$order_status_str&raquo;. Он будет доступен, как только мы получим подтверждение оплаты.";
+				default:
+					return "Ваш заказ переведен в статус &laquo;$order_status_str&raquo;.";
 			}
-			
-			$order_id = $response->order_id;
-			$order = Application::getEntityInstance('order');
-			$order = $order->load($order_id);
-			
-			if (!$order) {
-				Application::stackError("Заказ не найден");
-				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));				
-			}
-			
-			$new_status = 'failed';
+		}
+		
+		protected function successShowError() {
+			$new_status = $this->order->status;
 			$order_statuses = $order->getStatusOptions();
 			$new_status_str = isset($order_statuses[$new_status]) ? $order_statuses[$new_status] : $new_status;
-			
-			$order->status = $new_status;
-			if (!$order->save()) {
-				Application::stackError("Не удалось перевести заказ в статус &laquo;$new_status_str&raquo;");
-				die();
-				Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));
-			}
-			
-			$cart = shopPkgHelperLibrary::getCartInstance();
-			$cart->clear();
-			Application::stackMessage("Заказ не был оплачен и переведен в статус &laquo;$new_status_str&raquo;.");
-			Redirector::redirect(Application::getSeoUrl("/profile/orders"));
+						
+			Application::stackError("Не удалось перевести заказ в статус &laquo;$new_status_str&raquo;");				
+			Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/error"));
 		}
-
+		
+		
+		protected function taskFail($params=array()) {
+			
+			$this->processPaymentReturnUrl('fail');
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			
+			if ($this->failChangeOrder()) {
+				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
+				return $this->failShowResult();	
+			}
+			else {
+				$payment_connector->writeLog($this->order->id, "Не удалось изменить статус заказа на {$this->order->status}.");
+				return $this->failShowError();
+			}
+		}
 		
 		protected function taskError($params=array()) {
 			
 		}
 		
+		protected function failChangeOrder() {
+			$new_order_status = $this->order->status; 
+			
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$payment_status = $payment_connector->queryPaymentStatus($this->order);
+			// если у нас получилось запросить статус заказа асинхронно...
+			if ($payment_status->result == 'ok') {
+				if ($payment_status->order_status) {
+					$new_order_status = $payment_status->order_status;					
+				}	
+			}
+			// если не получилось, считаем, что оплата заказа провалена  
+			// (к этому моменту мы уже знаем, что на suceess url пришли достоверные данные)
+			else {
+				$new_order_status = 'canceled';
+			}
+			
+			// если статус заказа изменился, сохраняем
+			if ($new_order_status != $this->order->status) {
+				$this->order->status = $new_order_status;
+				return $this->order->save();	
+			}
+			// если нет, то ничего не делаем
+			else {
+				$payment_connector->writeLog($this->order->id, "Заказ в статусе $new_order_status. Не меняем.");
+				return $this->order->id;
+			}
+		}
 		
+		
+		protected function failShowResult() {
+			$new_status = $this->order->status;			
+			Application::stackMessage($this->getUserMessage($new_status));
+			Redirector::redirect(Application::getSeoUrl("/profile/orders"));
+		}
+		
+		
+		protected function failShowError() {
+			return $this->successShowError();
+		}
+		
+				
 		protected function createNewOrder($cart) {
 			$order = Application::getEntityInstance('order');
 			
