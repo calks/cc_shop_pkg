@@ -43,7 +43,7 @@
 				$smarty->assign('back_link', Application::getSeoUrl("/{$this->getName()}/orders"));
 			}
 			else {				
-				$order_params[] = "$order_table.user_id={$this->user->id}";
+				$order_params['where'][] = "$order_table.user_id={$this->user->id}";
 				$order_list = $order->load_list($order_params);
 				
 				shopPkgHelperLibrary::prepareOrder($order_list);
