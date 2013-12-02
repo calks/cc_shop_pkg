@@ -23,7 +23,7 @@
 					<td>{$item->price_str}</td>
 					{if $order->status=='payed'}
 						<th>
-							<a href="{$item->download_link}">скачать</a>
+							{if $item->download_link}<a href="{$item->download_link}">скачать</a>{/if}
 						</th>
 					{/if}	
 				</tr>

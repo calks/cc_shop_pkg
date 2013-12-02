@@ -86,11 +86,11 @@
 			
 			$product = Application::getEntityInstance('product');
 			$product_ids = array_keys($this->_products);
-			
+			$product_ids = implode(',', $product_ids);
 			$product_table = $product->getTableName();			
 			
-			$params[] = "$product_table.active=1";
-			$params[] = "$product_table.id IN($product_ids)";
+			$params['where'][] = "$product_table.active=1";
+			$params['where'][] = "$product_table.id IN($product_ids)";
 			
 			$product_list = $product->load_list($params);
 			foreach($product_list as $p) {
