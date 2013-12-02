@@ -12,6 +12,10 @@
 		
 		abstract public function parseSuccessParams();
 		
+		abstract public function parseFailParams();
+		
+		abstract public function parseResultParams();
+				
 		protected function getLogDirectory($order_id) {
 			$base_dir = Application::getVarDirectory() . '/logs/payment';
 			$order_id_six_digit = str_pad($order_id, 6, '0', STR_PAD_LEFT);

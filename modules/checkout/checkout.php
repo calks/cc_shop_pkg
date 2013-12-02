@@ -26,12 +26,14 @@
 			$back_url = Application::getSeoUrl("/{$this->getName()}/$this->task");
 			$login_redirect_url = Application::getSeoUrl("/login?back=" . rawurlencode($back_url));
 			
-			if (!$this->user_logged) {
+			$authorization_needed = $this->task != 'result_listener'; 
+			
+			if ($authorization_needed && !$this->user_logged) {
 				Application::stackWarning("Для оформления заказа вы должны войти на сайт или зарегистрироваться");
 				Redirector::redirect($login_redirect_url);
 			}
 			
-			if (!in_array(USER_ROLE_CONSUMER, $this->user_logged->roles)) {
+			if ($authorization_needed && !in_array(USER_ROLE_CONSUMER, $this->user_logged->roles)) {
 				Application::stackWarning("Для оформления заказа необходимо зайти на сайт как покупатель");
 				$user_session->logout();				
 				Redirector::redirect($login_redirect_url);
@@ -286,7 +288,7 @@
 				}	
 			}
 			// если не получилось, считаем, что оплата заказа провалена  
-			// (к этому моменту мы уже знаем, что на suceess url пришли достоверные данные)
+			// (к этому моменту мы уже знаем, что на fail url пришли достоверные данные)
 			else {
 				$new_order_status = 'canceled';
 			}
@@ -347,10 +349,24 @@
 		
 		
 		protected function taskResultListener($params=array()) {
-			die();
+			if (!Request::isPostMethod()) die();
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$this->payment_response = $payment_connector->parseResultParams();
+
+			if (!$this->payment_response->is_valid) die('signature does not match');
+			
+			$order_id = $this->payment_response->order_id;
+			$this->order = Application::getEntityInstance('order');
+			$this->order = $this->order->load($order_id);
+			
+			if (!$this->order) die('order not found');
+			
+			if ($this->successChangeOrder()) {
+				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
+			}
+			
+			die("OK$order_id\n");
 		}
-		
-		
 		
 		
 	}

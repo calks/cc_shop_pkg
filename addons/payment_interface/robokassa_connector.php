@@ -68,7 +68,7 @@
 		
 		
 		
-		public function parseSuccessParams($log_title='SUCCESS URL') {
+		public function parseSuccessParams($log_title='SUCCESS URL', $use_pass=1) {
 			
 			$amount = Request::get('OutSum');
 			$order_id = Request::get('InvId');
@@ -79,13 +79,16 @@
 				$extra_params[substr($k, 3)] = $v;
 			}
 			
-			$signature = Request::get('SignatureValue');			
-			$expected_signature = "$amount:$order_id:$this->payment_password_1";
+			$signature = Request::get('SignatureValue');	
+			$pass = $use_pass==1 ? $this->payment_password_1 : $this->payment_password_2;
+			
+			$expected_signature = "$amount:$order_id:$pass";
 			foreach($extra_params as $k=>$v) {
 				$expected_signature .= ":shp$k=$v";
 			}
-			$expected_signature = md5($expected_signature);
-			$signature_valid = $signature == $expected_signature;
+			
+			$expected_signature = md5($expected_signature);			
+			$signature_valid = strtolower($signature) === strtolower($expected_signature);
 			
 			$log[] = "Переход по $log_title";
 			$log[] = "Сумма (OutSum): $amount";
@@ -117,6 +120,12 @@
 		public function parseFailParams() {
 			return $this->parseSuccessParams('FAIL URL');
 		}
+		
+		
+		public function parseResultParams() {
+			return $this->parseSuccessParams('RESULT URL', 2);
+		}
+		
 		
 		
 		protected function getStatusCodeDescription($status_code) {
@@ -195,6 +204,7 @@
 			
 			$log[] = "Запрос статуса платежа";
 			if (!$xml || $http_code!=200 || $curl_error) {
+				
 				$log[] = "Запрос не удался.";
 				$log[] = "HTTP $http_code";
 				
@@ -214,7 +224,7 @@
 			}
 			
 			$data = coreXmlLibrary::getFromString($xml);
-			//die($xml);
+			
 			if ($data === false) {
 				$log[] = "Ошибка парсера: " . coreXmlLibrary::getLastError();
 				$log[] = "Данные XML:\n" . $xml;
