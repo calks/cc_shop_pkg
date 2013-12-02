@@ -163,7 +163,7 @@
 
 			// StateCode используется при работе с тестовым сервером
 			// Это код состояния оплаты, который мы хотим получить
-			if ($this->test_mode) $post_data .= "&StateCode=10";
+			if ($this->test_mode) $post_data .= "&StateCode=100";
 			
 			$options = array(
 				CURLOPT_URL => $this->xml_interface_payment_state_url,
@@ -258,7 +258,7 @@
 		protected function collectPaymentInfo($info_node, $prefix = '') {			
 			$out = array();
 			foreach($info_node->children() as $name=>$node) {
-				if($node->count()) {
+				if(count($node->children())) {
 					$children = $this->collectPaymentInfo($node, $name . '::');
 					foreach($children as $c_name => $c) {
 						$out[$c_name] = $c;

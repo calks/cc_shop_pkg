@@ -237,7 +237,7 @@
 			
 			switch ($order_status) {
 				case 'payed':
-					return "Ваш заказ переведен в статус &laquo;$new_status_str&raquo;. Спасибо за покупку.";
+					return "Ваш заказ переведен в статус &laquo;$order_status_str&raquo;. Спасибо за покупку.";
 				case 'processing':
 					return "Ваш заказ переведен в статус &laquo;$order_status_str&raquo;. Он будет доступен, как только мы получим подтверждение оплаты.";
 				default:
@@ -343,6 +343,11 @@
 			$order_item->cost = $cart_item->cost;
 			
 			return $order_item;
+		}
+		
+		
+		protected function taskResultListener($params=array()) {
+			die();
 		}
 		
 		
