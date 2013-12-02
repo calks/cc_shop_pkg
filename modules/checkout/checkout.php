@@ -139,7 +139,7 @@
 			if ($this->order->save()) {
 				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
 				$payment_url = $payment_connector->getPaymentUrl($this->order, 'Заказ в интернет-магазине #' . $this->order->id);
-				$payment_connector->writeLog($this_order->id, "Пользователь отправлен на оплату \n $payment_url");
+				$payment_connector->writeLog($this->order->id, "Пользователь отправлен на оплату \n $payment_url");
 				Redirector::redirect($payment_url);				
 			}
 			else {
