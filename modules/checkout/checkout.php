@@ -26,7 +26,7 @@
 			$back_url = Application::getSeoUrl("/{$this->getName()}/$this->task");
 			$login_redirect_url = Application::getSeoUrl("/login?back=" . rawurlencode($back_url));
 			
-			$authorization_needed = $this->task != 'result_listener'; 
+			$authorization_needed = in_array($this->task, array('review', 'confirm')); 
 			
 			if ($authorization_needed && !$this->user_logged) {
 				Application::stackWarning("Для оформления заказа вы должны войти на сайт или зарегистрироваться");
