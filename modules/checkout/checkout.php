@@ -181,14 +181,11 @@
 		
 		protected function taskSuccess($params=array()) {
 			$this->processPaymentReturnUrl('success');
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
-			
-			if ($this->successChangeOrder()) {
-				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
+						
+			if ($this->successChangeOrder()) {				
 				return $this->successShowResult();	
 			}
-			else {
-				$payment_connector->writeLog($this->order->id, "Не удалось изменить статус заказа на {$this->order->status}.");
+			else {				
 				return $this->successShowError();
 			}
 		}
@@ -213,7 +210,10 @@
 			// если статус заказа изменился, сохраняем
 			if ($new_order_status != $this->order->status) {
 				$this->order->status = $new_order_status;
-				return $this->order->save();					
+				$saved = $this->order->save();
+				if ($saved) $payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
+				else $payment_connector->writeLog($this->order->id, "Не удалось изменить статус заказа на {$this->order->status}.");
+				return $saved; 					
 			}
 			// если нет, то ничего не делаем
 			else {
@@ -257,17 +257,13 @@
 		}
 		
 		
-		protected function taskFail($params=array()) {
-			
+		protected function taskFail($params=array()) {			
 			$this->processPaymentReturnUrl('fail');
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
 			
-			if ($this->failChangeOrder()) {
-				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
+			if ($this->failChangeOrder()) {				
 				return $this->failShowResult();	
 			}
-			else {
-				$payment_connector->writeLog($this->order->id, "Не удалось изменить статус заказа на {$this->order->status}.");
+			else {				
 				return $this->failShowError();
 			}
 		}
@@ -296,7 +292,10 @@
 			// если статус заказа изменился, сохраняем
 			if ($new_order_status != $this->order->status) {
 				$this->order->status = $new_order_status;
-				return $this->order->save();	
+				$saved = $this->order->save();
+				if ($saved) $payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
+				else $payment_connector->writeLog($this->order->id, "Не удалось изменить статус заказа на {$this->order->status}.");
+				return $saved;
 			}
 			// если нет, то ничего не делаем
 			else {
@@ -361,11 +360,9 @@
 			
 			if (!$this->order) die('order not found');
 			
-			if ($this->successChangeOrder()) {
-				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
-			}
+			if($this->successChangeOrder()) die("OK$order_id\n");
+			else die('application error');
 			
-			die("OK$order_id\n");
 		}
 		
 		
