@@ -3,8 +3,9 @@
 	class shopPkgOrderItemEntity extends coreBaseEntity {
 		
 		public $order_id;
-		public $product_id;
-		public $product_title;
+		public $entity_name;
+		public $entity_id;
+		public $entity_data;		
 		public $quantity;
 		public $price;
 		public $cost;
@@ -14,19 +15,23 @@
 			return 'order_item';
 		}
 		
+		
+		public function save() {
+			$entity_data = $this->entity_data;
+			$this->entity_data = serialize($this->entity_data);
+			$id = parent::save();
+			$this->entity_data = $entity_data;
+			return $id;
+		}
+		
 
 		public function load_list($params=array()) {
-			$table = $this->getTableName();
-			$product = Application::getEntityInstance('product');
-			$product_table = $product->getTableName();
-			$product_alias = 't_' . md5(uniqid());
 			
-			$params['from'][] = "
-				LEFT JOIN $product_table $product_alias ON $product_alias.id = $table.product_id
-			";
-			$params['fields'][] = "IF($product_alias.title IS NOT NULL, $product_alias.title, $table.product_title) AS product_title";
-			
-			return parent::load_list($params);
+			$list = parent::load_list($params);
+			foreach($list as $item) {
+				$item->entity_data = unserialize($item->entity_data);
+			}
+			return $list;
 		}
 		
 		

@@ -5,6 +5,7 @@
 		public $user_id;
 		public $created;
 		public $status;
+		public $payment_method;
 		public $amount;
 		public $user_name;
 		public $user_family_name;
@@ -38,7 +39,7 @@
 			
 			$is_new = !$this->id;			
 			if ($is_new && !$this->items) return null;
-			
+
 			$id = parent::save();
 			
 			if ($is_new && $id) {
@@ -53,6 +54,7 @@
 		
 		
 		protected function saveItems() {
+			
 			$saved = array();
 			$everything_ok = true;
 			foreach ($this->items as $item) {

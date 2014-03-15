@@ -19,15 +19,14 @@
 		}
 		
 		
-		public static function getPaymentInterfaceConnector() {
-			
-			$connector_name='robokassa';
+		public static function getPaymentInterfaceConnector($connector_name='robokassa') {
 			
 			$addon_name = $connector_name . '_connector';
 			$addons_available = coreResourceLibrary::getAvailableFiles(APP_RESOURCE_TYPE_ADDON, 'payment_interface', "/$addon_name.php");
 			
 			if (!$addons_available) {
-				die("No $connector_name interface connector");
+				throw new Exception("No $connector_name interface connector", 999);
+				return null;
 			}
 			$file_path = coreResourceLibrary::getAbsolutePath($addons_available[$addon_name]->path);
 			
@@ -45,9 +44,8 @@
 			$array_given = is_array($order_or_array);
 			if (!$array_given) $order_or_array = array($order_or_array);
 			
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
-			
 			foreach($order_or_array as $o) {
+				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($o->payment_method);
 				$o->created_str = coreFormattingLibrary::formatDate($o->created);
 				$o->amount_str = coreFormattingLibrary::formatCurrency($o->amount, ' руб.');
 				$o->pay_link = $o->status=='new' ? $payment_connector->getPaymentUrl($o) : null;
