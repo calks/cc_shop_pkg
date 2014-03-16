@@ -28,6 +28,7 @@
 		public function getStatusOptions() {
 			return array(
 				'new' => 'Новый',
+				'waiting_payment' => 'Ожидание оплаты',
 				'payed' => 'Оплачен',
 				'processing' => 'Обрабатывается',
 				'canceled' => 'Отменен'
@@ -96,11 +97,38 @@
 			
 			$status_options = $this->getStatusOptions();
 			foreach($list as $item) {
-				$item->status_str = isset($status_options[$item->status]) ? $status_options[$item->status] : 'Неизвестен'; 
+				$item->status_str = isset($status_options[$item->status]) ? $status_options[$item->status] : 'Неизвестен';
+				$item->amount_str = $item->amount;  
 			}
+			
+			$this->addPaymentMethodNames($list);
 			
 			return $list;
 		}
 		
+		protected function addPaymentMethodNames(&$list) {
+			if (!$list) return;
+			
+						
+			$mapping = array();
+			foreach ($list as $item) {
+				$item->payment_method_name = $item->payment_method ? $item->payment_method : 'Не задан';
+				if (!$item->payment_method) continue;
+				if (!isset($mapping[$item->payment_method])) $mapping[$item->payment_method] = array();
+				$mapping[$item->payment_method][] = $item;
+			}
+			
+			
+			foreach ($mapping as $payment_method=>$items) {
+				$connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($payment_method);
+				foreach($items as $item) $item->payment_method_name = $connector->getName();
+			}
+			
+		}
+		
 		
 	}
+	
+	
+	
+	

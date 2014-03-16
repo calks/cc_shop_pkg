@@ -30,6 +30,8 @@
 			$list = parent::load_list($params);
 			foreach($list as $item) {
 				$item->entity_data = unserialize($item->entity_data);
+				$item->price_str = $item->price;
+				$item->cost_str = $item->cost; 
 			}
 			return $list;
 		}
