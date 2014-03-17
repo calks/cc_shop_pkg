@@ -94,7 +94,7 @@
 			
 			
 			$smarty->assign('cart_content', $cart->getContent());
-			$subtotal_str = coreFormattingLibrary::formatCurrency($cart->getSubtotal(), ' руб.');
+			$subtotal_str = coreFormattingLibrary::formatCurrency($cart->getSubtotal(), CURRENCY_LABEL);
 			$smarty->assign('cart_subtotal_str', $subtotal_str);
 			
 			$smarty->assign('checkout_link', Application::getSeoUrl("/checkout"));

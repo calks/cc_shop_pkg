@@ -66,11 +66,12 @@
 			$object = $this->objects[0];
 			shopPkgHelperLibrary::loadOrderItems($object);
 			
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($object->payment_method);
 			$object->payment_log = htmlspecialchars($payment_connector->readLog($object->id)); 
-			
+						
 			foreach($object->items as $i) {
-				$i->product_link = $i->product_id ? Application::getSeoUrl("/product?action=edit&ids[]=$i->product_id") : '';
+				if ($i->entity_name != 'product') continue;
+				$i->product_link = $i->entity_id ? Application::getSeoUrl("/product?action=edit&ids[]=$i->entity_id") : '';
 			}
 			
 			$smarty = Application::getSmarty();

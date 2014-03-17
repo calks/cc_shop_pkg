@@ -130,7 +130,7 @@
 			imagePkgHelperLibrary::loadImages($cart_content, 'images');
 			
 			foreach($cart_content as $item) {
-				$item->cost_str = coreFormattingLibrary::formatCurrency($item->cost, ' руб.');
+				$item->cost_str = coreFormattingLibrary::formatCurrency($item->cost, CURRENCY_LABEL);
 				$image_id = isset($item->images[0]) ? $item->images[0]->id : null;
 				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 50, 50, 'crop', $image_id ? 'jpeg' : 'png'); 	
 				$item->link = Application::getSeoUrl("/catalog/$item->product_category_id/$item->id");
