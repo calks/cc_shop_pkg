@@ -66,8 +66,10 @@
 			$object = $this->objects[0];
 			shopPkgHelperLibrary::loadOrderItems($object);
 			
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($object->payment_method);
-			$object->payment_log = htmlspecialchars($payment_connector->readLog($object->id)); 
+			if ($object->payment_method) {
+				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($object->payment_method);
+				$object->payment_log = htmlspecialchars($payment_connector->readLog($object->id));
+			} 
 						
 			foreach($object->items as $i) {
 				if ($i->entity_name != 'product') continue;

@@ -112,14 +112,13 @@
 						
 			$mapping = array();
 			foreach ($list as $item) {
-				$item->payment_method_name = $item->payment_method ? $item->payment_method : 'Не задан';
+				$item->payment_method_name = $item->payment_method ? $item->payment_method : 'Не задан';				 
 				if (!$item->payment_method) continue;
 				if (!isset($mapping[$item->payment_method])) $mapping[$item->payment_method] = array();
 				$mapping[$item->payment_method][] = $item;
 			}
-			
-			
-			foreach ($mapping as $payment_method=>$items) {
+						
+			foreach ($mapping as $payment_method=>$items) {				
 				$connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($payment_method);
 				foreach($items as $item) $item->payment_method_name = $connector->getName();
 			}

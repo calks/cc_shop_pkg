@@ -25,7 +25,9 @@
 		
 		
 		public static function getPaymentInterfaceConnector($connector_name='robokassa') {
-			
+			if (!$connector_name) {
+				echo coreDebugLibrary::getTraceSummary(); die();
+			}
 			$addon_name = $connector_name . '_connector';
 			$addons_available = coreResourceLibrary::getAvailableFiles(APP_RESOURCE_TYPE_ADDON, 'payment_interface', "/$addon_name.php");
 			
@@ -50,6 +52,7 @@
 			if (!$array_given) $order_or_array = array($order_or_array);
 			
 			foreach($order_or_array as $o) {
+				if (!$o->payment_method) continue;
 				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($o->payment_method);
 				$o->created_str = coreFormattingLibrary::formatDate($o->created);
 				$o->amount_str = coreFormattingLibrary::formatCurrency($o->amount, CURRENCY_LABEL);
