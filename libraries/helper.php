@@ -52,10 +52,10 @@
 			if (!$array_given) $order_or_array = array($order_or_array);
 			
 			foreach($order_or_array as $o) {
-				if (!$o->payment_method) continue;
-				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($o->payment_method);
 				$o->created_str = coreFormattingLibrary::formatDate($o->created);
 				$o->amount_str = coreFormattingLibrary::formatCurrency($o->amount, CURRENCY_LABEL);
+				if (!$o->payment_method) continue;
+				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($o->payment_method);
 				$o->pay_link = $o->status=='new' ? $payment_connector->getPaymentUrl($o) : null;
 			}
 			
@@ -121,7 +121,7 @@
 				
 				$entity_params['where'][] = "$entity_table.id IN($ids)";
 				if ($entity_name == 'product') {
-					$entity_params['where'][] = "$product_table.active=1";
+					$entity_params['where'][] = "$entity_table.active=1";
 				} 
 
 				

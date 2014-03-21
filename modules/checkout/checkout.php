@@ -338,7 +338,9 @@
 		protected function createOrderItem($cart_item) {
 			$order_item = Application::getEntityInstance('order_item');
 			
-			$order_item->product_id = $cart_item->id;
+			$order_item->entity_id = $cart_item->id;
+			$order_item->entity_name = 'product';
+			$order_item->entity_data = $cart_item;
 			$order_item->product_title = $cart_item->title;
 			$order_item->quantity = $cart_item->quantity;
 			$order_item->price = $cart_item->price;
