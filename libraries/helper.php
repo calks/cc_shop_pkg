@@ -126,10 +126,10 @@
 
 				
 				$list = $entity->load_list($entity_params);
-				imagePkgHelperLibrary::loadImages($list, 'images');
+				imagePkgHelperLibrary::loadImages($list, 'image');
 				
 				foreach($list as $p) {
-					$image_id = isset($p->images[0]) ? $p->images[0]->id : 0;
+					$image_id = isset($p->image_list[0]) ? $p->image_list[0]->id : 0;
 					$thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 50, 50, 'crop', $image_id ? 'jpeg' : 'png');
 					$catalog_link = $entity_name == 'product' ? Application::getSeoUrl("/catalog/$p->product_category_id/$p->id") : '';
 					foreach($entities[$p->id] as $item) {

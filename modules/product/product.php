@@ -52,10 +52,10 @@
 		
 		
 		protected function afterListLoad(&$list) {
-			imagePkgHelperLibrary::loadImages($list, 'images');
+			imagePkgHelperLibrary::loadImages($list, 'image');
 			
 			foreach($list as $item) {
-				$image_id = isset($item->images[0]) ? $item->images[0]->id : 0;
+				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : 0;
 				$item->image_thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 60, 60, 'crop', $image_id ? 'jpeg' : 'png');
 			}
 		}

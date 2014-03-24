@@ -143,10 +143,10 @@
         	
         	$this->loadProductCount($category_or_array);
         	
-        	imagePkgHelperLibrary::loadImages($category_or_array, 'images');
+        	imagePkgHelperLibrary::loadImages($category_or_array, 'image');
         	foreach($category_or_array as $item) {				
         		$item->title = coreFormattingLibrary::plaintext($item->title);
-				$image_id = isset($item->images[0]) ? $item->images[0]->id : 0;				
+				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : 0;				
 				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 156, 100, 'crop', $image_id ? 'jpeg' : 'png');
 				$item->link = Application::getSeoUrl("$this->base_url/$item->id");
 				$item->description_short = coreFormattingLibrary::truncate($item->description, 100);				
@@ -191,10 +191,10 @@
         	$array_given = is_array($product_or_array);
         	if (!$array_given) $product_or_array = array($product_or_array);
         	
-        	imagePkgHelperLibrary::loadImages($product_or_array, 'images');
+        	imagePkgHelperLibrary::loadImages($product_or_array, 'image');
         	foreach($product_or_array as $item) {				
         		$item->title = coreFormattingLibrary::plaintext($item->title);
-				$image_id = isset($item->images[0]) ? $item->images[0]->id : 0;				
+				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : 0;				
 				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 150, 117, 'crop', $image_id ? 'jpeg' : 'png');
 				$item->image = imagePkgHelperLibrary::getThumbnailUrl($image_id, 320, 250, 'crop', $image_id ? 'jpeg' : 'png');
 				$item->link = Application::getSeoUrl("$this->base_url/$item->id");
