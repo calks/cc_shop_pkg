@@ -17,7 +17,7 @@
     	protected $page_heading;
     	protected $page_content;
 
-        public function run($params=array()) {
+        public function run($params=array()) {        	
 			$page = Application::getPage();
 			
 			$this->base_url = '/' . $this->getName();
@@ -92,6 +92,12 @@
         		$load_params['where'][] = "$table.product_category_id=$this->product_category_id";
         		$load_params['where'][] = "$table.active=1";
         	}
+        	        	
+        	if (Application::filterExists($this->listed_entity_name)) {
+        		$filter = Application::getFilter($this->listed_entity_name);        		
+        		$filter->set_params($load_params);
+        	}
+        	
         	$total_items = $entity->count_list($load_params);
 
         	$pagenav_block = null;
@@ -115,8 +121,6 @@
         	$items = $entity->load_list($load_params);
         	
         	if ($this->listed_entity_name=='product_category') {
-        		/*$items = array_merge($items, $items, $items);
-        		$items = array_merge($items, $items, $items);*/
         		$this->prepareCategory($items);
         	}
         	else {

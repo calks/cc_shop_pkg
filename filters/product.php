@@ -9,6 +9,7 @@
 
 
         function set_params(&$params) {
+        	parent::set_params($params);
             $db = Application::getDb();
             
             $category_id = (int)$this->getValue('search_product_category');
