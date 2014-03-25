@@ -7,6 +7,8 @@
 		protected $content;
 		protected $total;
 		protected $subtotal;
+		protected $items_count;
+		
 		
 		public function __construct() {
 			$this->_products = array();			
@@ -112,12 +114,14 @@
 		public function updateCalculatedData() {
 			$this->subtotal = 0;
 			$this->total = 0;
+			$this->items_count = 0;
 			
 			$this->reloadContent();
 			
 			foreach ($this->content as $pid => $product) {
 				$product->cost = $product->price * $product->quantity;
-				$this->subtotal += $product->cost; 
+				$this->subtotal += $product->cost;
+				$this->items_count += $product->quantity;
 			}
 			
 			$this->total = $this->subtotal;
@@ -147,6 +151,14 @@
 		
 		public function getTotal() {
 			return $this->total;
+		}
+		
+		public function getItemsCount() {
+			return $this->items_count;
+		}
+		
+		public function getProductsCount() {
+			return count($this->_products);
 		}
 		
 		
