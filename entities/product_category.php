@@ -41,7 +41,7 @@
 		
         function getSelect($add_null_item) {
         	$db = Application::getDb();
-        	$table = $this->get_table_name();
+        	$table = $this->getTableName();
 
         	$sql = "
         		SELECT id, title 

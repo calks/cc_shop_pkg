@@ -13,7 +13,7 @@
 			$search_category = (int)Request::get('search_product_category');
 			if ($search_category) {
 				$filter->setValue('search_product_category', $search_category);
-				$filter->saveToSession(Application::getApplicationName());
+				$filter->saveToSession();
 				$this->url_addition .= 'search_product_category=' .$search_category;
 			}
 			$filter->set_params($load_params);
@@ -25,7 +25,7 @@
 			$category_table = $category->getTableName();
 						
 			$object = Application::getEntityInstance($this->getObjectName());
-			$table = $object->get_table_name();
+			$table = $object->getTableName();
 			 
 			
 			$load_params['fields'][] = "$category_table.title AS product_category_title";
