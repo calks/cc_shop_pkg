@@ -26,7 +26,7 @@
 		
 		public static function getPaymentInterfaceConnector($connector_name='robokassa') {
 			if (!$connector_name) {
-				echo coreDebugLibrary::getTraceSummary(); die();
+				throw new Exception("No $connector_name supplied", 999);
 			}
 			$addon_name = $connector_name . '_connector';
 			$addons_available = coreResourceLibrary::getAvailableFiles(APP_RESOURCE_TYPE_ADDON, 'payment_interface', "/$addon_name.php");

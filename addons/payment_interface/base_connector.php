@@ -9,7 +9,7 @@
 		abstract public function loadSettings();
 		
 		abstract public function getPaymentUrl($order, $description=null);
-		
+	
 		abstract public function parseSuccessParams();
 		
 		abstract public function parseFailParams();
