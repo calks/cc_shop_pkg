@@ -134,10 +134,9 @@
 				Redirector::redirect(Application::getSeoUrl("/cart"));
 			}
 			
-			
 			$this->order = $this->createNewOrder($cart);
 			if ($this->order->save()) {
-				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+				$payment_connector = $this->getPaymentConnector($this->order->payment_method);
 				$payment_url = $payment_connector->getPaymentUrl($this->order, 'Заказ в интернет-магазине #' . $this->order->id);
 				$payment_connector->writeLog($this->order->id, "Пользователь отправлен на оплату \n $payment_url");
 				Redirector::redirect($payment_url);				
@@ -148,8 +147,8 @@
 			}
 		}
 		
-		protected function processPaymentReturnUrl($url_type) {
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+		protected function processPaymentReturnUrl($url_type, $connector_name) {
+			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($connector_name);
 			
 			switch ($url_type) {
 				case 'success':
@@ -180,8 +179,12 @@
 		}
 		
 		protected function taskSuccess($params=array()) {
-			$this->processPaymentReturnUrl('success');
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$connector_name = @array_shift($params);
+			$payment_connector = $this->getPaymentConnector($connector_name);
+			if (!$payment_connector) return $this->terminate();
+			
+			$this->processPaymentReturnUrl('success', $connector_name);
+			//$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
 			
 			if ($this->successChangeOrder()) {
 				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
@@ -196,7 +199,7 @@
 		protected function successChangeOrder() {
 			$new_order_status = $this->order->status; 
 			
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$payment_connector = $this->getPaymentConnector($this->order->payment_method);
 			$payment_status = $payment_connector->queryPaymentStatus($this->order);
 			// если у нас получилось запросить статус заказа асинхронно...
 			if ($payment_status->result == 'ok') {
@@ -258,9 +261,13 @@
 		
 		
 		protected function taskFail($params=array()) {
+			$connector_name = @array_shift($params);
+			$payment_connector = $this->getPaymentConnector($connector_name);
+			if (!$payment_connector) return $this->terminate();
 			
-			$this->processPaymentReturnUrl('fail');
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$this->processPaymentReturnUrl('fail', $connector_name);
+			
+			//$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
 			
 			if ($this->failChangeOrder()) {
 				$payment_connector->writeLog($this->order->id, "Статус заказа изменен на {$this->order->status}.");
@@ -279,7 +286,7 @@
 		protected function failChangeOrder() {
 			$new_order_status = $this->order->status; 
 			
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$payment_connector = $this->getPaymentConnector($this->order->payment_method);
 			$payment_status = $payment_connector->queryPaymentStatus($this->order);
 			// если у нас получилось запросить статус заказа асинхронно...
 			if ($payment_status->result == 'ok') {
@@ -317,6 +324,10 @@
 			return $this->successShowError();
 		}
 		
+		
+		protected function choosePaymentMethod() {
+			return 'robokassa';
+		}
 				
 		protected function createNewOrder($cart) {
 			$order = Application::getEntityInstance('order');
@@ -327,6 +338,7 @@
 			$order->user_name = $this->user_logged->name;
 			$order->user_family_name = $this->user_logged->family_name;
 			$order->user_email = $this->user_logged->email;
+			$order->payment_method = $this->choosePaymentMethod();
 			
 			foreach ($cart->getContent() as $cart_item) {
 				$order->items[] = $this->createOrderItem($cart_item);
@@ -350,9 +362,26 @@
 		}
 		
 		
+		protected function getPaymentConnector($connector_name) {
+			if (!$connector_name) $connector_name = $this->choosePaymentMethod();
+			$connector_found = true;
+			try {			
+				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();				
+			}
+			catch (Exception $e) {
+				$connector_found = false;		
+			}
+			return  $connector_found ? $payment_connector : null;
+			
+		}
+		
 		protected function taskResultListener($params=array()) {
 			if (!Request::isPostMethod()) die();
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
+			$connector_name = @array_shift($params);
+			$payment_connector = $this->getPaymentConnector($connector_name);
+			
+			if (!$payment_connector) die('unknown payment method');
+			
 			$this->payment_response = $payment_connector->parseResultParams();
 
 			if (!$this->payment_response->is_valid) die('signature does not match');
