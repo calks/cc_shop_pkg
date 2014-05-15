@@ -200,19 +200,23 @@
 			$new_order_status = $this->order->status; 
 			
 			$payment_connector = $this->getPaymentConnector($this->order->payment_method);
-			$payment_status = $payment_connector->queryPaymentStatus($this->order);
-			// если у нас получилось запросить статус заказа асинхронно...
-			if ($payment_status->result == 'ok') {
-				if ($payment_status->order_status) {
-					$new_order_status = $payment_status->order_status;					
+
+			// по умолчанию считаем, что заказ оплачен 
+			// (к этому моменту мы уже знаем, что на suceess url пришли достоверные данные)			
+			$new_order_status = 'payed';
+			
+			$can_query_status = method_exists($payment_connector, 'queryPaymentStatus');
+			// если интерфейс оплаты предоставляет возможность получить статус асинхронно,
+			// делаем запрос
+			if ($can_query_status) {
+				$payment_status = $payment_connector->queryPaymentStatus($this->order);
+				if ($payment_status->result == 'ok') {
+					if ($payment_status->order_status) {
+						$new_order_status = $payment_status->order_status;					
+					}	
 				}	
 			}
-			// если не получилось, считаем, что заказ оплачен 
-			// (к этому моменту мы уже знаем, что на suceess url пришли достоверные данные)
-			else {
-				$new_order_status = 'payed';
-			}
-			
+						
 			// если статус заказа изменился, сохраняем
 			if ($new_order_status != $this->order->status) {
 				$this->order->status = $new_order_status;
@@ -366,7 +370,7 @@
 			if (!$connector_name) $connector_name = $this->choosePaymentMethod();
 			$connector_found = true;
 			try {			
-				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();				
+				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($connector_name);				
 			}
 			catch (Exception $e) {
 				$connector_found = false;		

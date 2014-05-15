@@ -3,7 +3,7 @@
 	abstract class shopPkgPaymentInterfaceAddonBaseConnector {
 		
 		protected $test_mode;
-
+		
 		abstract public function getName();
 		
 		abstract public function loadSettings();
