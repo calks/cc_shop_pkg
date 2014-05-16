@@ -69,7 +69,7 @@
 		
 		
 		
-		public function parseSuccessParams($log_title='SUCCESS URL', $use_pass=1) {
+		public function parseSuccessParams($log_title='SUCCESS URL', $use_pass=1, $order_status_on_success='payed') {
 			
 			$amount = Request::get('OutSum');
 			$order_id = Request::get('InvId');
@@ -110,7 +110,7 @@
 			$out->amount_payed = $amount;
 			$out->is_valid = $signature_valid;
 			$out->extra_params = $extra_params;
-			
+			$out->new_order_status = $signature_valid ? $order_status_on_success : null;
 			
 			$this->writeLog($order_id, implode("\n", $log));
 			
@@ -119,12 +119,12 @@
 		
 		
 		public function parseFailParams() {
-			return $this->parseSuccessParams('FAIL URL');
+			return $this->parseSuccessParams('FAIL URL', 1, 'failed');
 		}
 		
 		
 		public function parseResultParams() {
-			return $this->parseSuccessParams('RESULT URL', 2);
+			return $this->parseSuccessParams('RESULT URL', 2, 'payed');
 		}
 		
 		

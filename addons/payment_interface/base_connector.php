@@ -15,7 +15,10 @@
 		abstract public function parseFailParams();
 		
 		abstract public function parseResultParams();
+		
+		protected $timestamp_printed = false;
 				
+		
 		protected function getLogDirectory($order_id) {
 			$base_dir = Application::getVarDirectory() . '/logs/payment';
 			$order_id_six_digit = str_pad($order_id, 6, '0', STR_PAD_LEFT);
@@ -43,14 +46,16 @@
 				die("Can't write to $file_path");
 			}
 			
-			$name = $this->getName();
-			if ($this->test_mode) $name .= " (тестовый режим)";
-			
-			fwrite($f, "************************************************************************\n");
-			fwrite($f, ' ' . $name . ' - ' .date("Y-m-d H:i:s") . "\n");
-			fwrite($f, "************************************************************************\n");
+			if (!$this->timestamp_printed) {
+				$this->timestamp_printed = true;
+				$name = $this->getName();
+				if ($this->test_mode) $name .= " (тестовый режим)";
+				
+				fwrite($f, "************************************************************************\n");
+				fwrite($f, ' ' . $name . ' - ' .date("Y-m-d H:i:s") . "\n");
+				fwrite($f, "************************************************************************\n");					
+			}
 			fwrite($f, $message . "\n\n\n");
-			
 			
 			fclose($f);
 		}
