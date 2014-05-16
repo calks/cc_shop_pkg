@@ -55,7 +55,7 @@
 				fwrite($f, ' ' . $name . ' - ' .date("Y-m-d H:i:s") . "\n");
 				fwrite($f, "************************************************************************\n");					
 			}
-			fwrite($f, $message . "\n\n\n");
+			fwrite($f, $message . "\n\n");
 			
 			fclose($f);
 		}
