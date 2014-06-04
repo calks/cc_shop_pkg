@@ -147,9 +147,8 @@
 			}
 		}
 		
-		protected function processPaymentReturnUrl($url_type, $connector_name) {
-			$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($connector_name);
-			
+		protected function processPaymentReturnUrl($url_type, $payment_connector) {
+						
 			switch ($url_type) {
 				case 'success':
 					$this->payment_response = $payment_connector->parseSuccessParams();
@@ -178,12 +177,13 @@
 			}
 		}
 		
-		protected function taskSuccess($params=array()) {
+		protected function taskSuccess($params=array()) {			
 			$connector_name = @array_shift($params);
 			$payment_connector = $this->getPaymentConnector($connector_name);
+			
 			if (!$payment_connector) return $this->terminate();
 			
-			$this->processPaymentReturnUrl('success', $connector_name);
+			$this->processPaymentReturnUrl('success', $payment_connector);
 			//$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
 			
 			if ($this->successChangeOrder()) {
@@ -269,7 +269,7 @@
 			$payment_connector = $this->getPaymentConnector($connector_name);
 			if (!$payment_connector) return $this->terminate();
 			
-			$this->processPaymentReturnUrl('fail', $connector_name);
+			$this->processPaymentReturnUrl('fail', $payment_connector);
 			
 			//$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector();
 			
@@ -368,20 +368,22 @@
 		
 		protected function getPaymentConnector($connector_name) {
 			if (!$connector_name) $connector_name = $this->choosePaymentMethod();
+			
 			$connector_found = true;
 			try {			
-				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($connector_name);				
+				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($connector_name);								
 			}
 			catch (Exception $e) {
 				$connector_found = false;		
-			}
-			return  $connector_found ? $payment_connector : null;
+			}		
+				
+			return $connector_found ? $payment_connector : null;
 			
 		}
 		
 		protected function taskResultListener($params=array()) {
 			if (!Request::isPostMethod()) die();
-			$connector_name = @array_shift($params);
+			$connector_name = @array_shift($params);			
 			$payment_connector = $this->getPaymentConnector($connector_name);
 			
 			if (!$payment_connector) die('unknown payment method');
