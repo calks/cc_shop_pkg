@@ -37,8 +37,8 @@
 					Redirector::redirect(Application::getSeoUrl("/{$this->getName()}/orders"));
 				}
 				
-				shopPkgHelperLibrary::prepareOrder($order);
-				shopPkgHelperLibrary::loadOrderItems($order);
+				$this->prepareOrder($order);
+
 				$smarty->assign('order', $order);
 				$smarty->assign('back_link', Application::getSeoUrl("/{$this->getName()}/orders"));
 			}
@@ -46,17 +46,25 @@
 				$order_params['where'][] = "$order_table.user_id={$this->user->id}";
 				$order_list = $order->load_list($order_params);
 				
-				shopPkgHelperLibrary::prepareOrder($order_list);
-				
+				$this->prepareOrderList($order_list);
+								
 				foreach($order_list as $o) {
 					$o->link = Application::getSeoUrl("/{$this->getName()}/orders/$o->id");
 				}
 				
-				$smarty->assign('order_list', $order_list);
+				$smarty->assign('order_list', $order_list);				
 			}
 			
-			$order = Application::getEntityInstance('order');
-			
+		}
+		
+		
+		protected function prepareOrderList($list) {
+			shopPkgHelperLibrary::prepareOrder($list);
+		}
+		
+		protected function prepareOrder($order) {
+			shopPkgHelperLibrary::prepareOrder($order);
+			shopPkgHelperLibrary::loadOrderItems($order);
 		}
 		
 		
