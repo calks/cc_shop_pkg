@@ -35,8 +35,8 @@
             )));
             
             $category = Application::getEntityInstance('product_category');
-            $form->addField(coreFormElementsLibrary::get('select', 'product_category_id', array(
-            	'options' => $category->getSelect('-- Не выбран --')
+            $form->addField(coreFormElementsLibrary::get('parent_select', 'product_category_id', array(
+            	'options' => $category->getProductParentSelect('-- Не выбран --')
             )));
             
             $form->addField(new THiddenField("seq"));

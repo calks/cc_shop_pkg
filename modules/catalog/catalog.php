@@ -36,32 +36,40 @@
 				$this->page_content = $document->content;
 			}
 			
-			$this->product_category_id = @(int)array_shift($params);
-			if ($this->product_category_id) {
+			
+			while ($params) {
+				$this->product_category_id = @(int)array_shift($params);
+					
 				$this->product_category = Application::getEntityInstance('product_category');
 				$this->product_category = $this->product_category->load($this->product_category_id);
 				if (!$this->product_category) return $this->terminate();
 				if (!$this->product_category->active) return $this->terminate();
-				$this->base_url .= "/$this->product_category_id";				
-				$this->listed_entity_name = 'product';
+				$this->base_url .= "/$this->product_category_id";
+				
 				$this->page_heading = $this->product_category->title;
 				$this->page_content = $this->product_category->description;
 				$breadcrumbs->addNode($this->base_url, $this->page_heading);
-				
-				$this->product_id = @(int)array_shift($params);
-				if ($this->product_id) {
-					$this->product = Application::getEntityInstance('product');
-					$this->product = $this->product->load($this->product_id);
-					if (!$this->product) return $this->terminate();
-					if (!$this->product->active) return $this->terminate();
-					
-					$this->base_url .= "/$this->product_category_id/$this->product_id";				
-					$this->action = 'detail';
-					$this->page_heading = $this->product->title;
-					$this->page_content = $this->product->description;
-					$breadcrumbs->addNode($this->base_url, $this->page_heading);
+
+				$has_products = $this->product_category->product_count != 0;
+				if ($has_products) {
+					$this->listed_entity_name = 'product';
+
+					$this->product_id = @(int)array_shift($params);
+					if ($this->product_id) {
+						$this->product = Application::getEntityInstance('product');
+						$this->product = $this->product->load($this->product_id);
+						if (!$this->product) return $this->terminate();
+						if (!$this->product->active) return $this->terminate();
+						
+						$this->base_url .= "/$this->product_category_id/$this->product_id";				
+						$this->action = 'detail';
+						$this->page_heading = $this->product->title;
+						$this->page_content = $this->product->description;
+						$breadcrumbs->addNode($this->base_url, $this->page_heading);
+					}						
 				}
 			}
+			
 			
         	
 			$method_name = 'task' . ucfirst($this->action);
@@ -87,6 +95,7 @@
         	$load_params = array();
         	if ($this->listed_entity_name=='product_category') {
         		$load_params['where'][] = "$table.active=1";
+        		$load_params['where'][] = $this->product_category_id ? "$table.parent_id=$this->product_category_id" : "($table.parent_id IS NULL OR $table.parent_id=0)";
         	}
         	else {
         		$load_params['where'][] = "$table.product_category_id=$this->product_category_id";

@@ -131,7 +131,11 @@
 				foreach($list as $p) {
 					$image_id = isset($p->image_list[0]) ? $p->image_list[0]->id : 0;
 					$thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 50, 50, 'crop', $image_id ? 'jpeg' : 'png');
-					$catalog_link = $entity_name == 'product' ? Application::getSeoUrl("/catalog/$p->product_category_id/$p->id") : '';
+					
+					$catalog_link = $entity_name == 'product' ? self::getProductCatalogLink($p) : '';
+					//$catalog_link = $entity_name == 'product' ? Application::getSeoUrl("/catalog/$p->product_category_id/$p->id") : '';
+					
+					
 					foreach($entities[$p->id] as $item) {
 						$item->thumbnail = $thumbnail;
 						$item->catalog_link = $catalog_link;
@@ -140,6 +144,18 @@
 				}
 			}
 			
+		}
+		
+		
+		public static function getProductCatalogLink($product) {
+			$category = Application::getEntityInstance('product_category');
+			$parents = $category->getAllParents($product->product_category_id);
+			$out[] = 'catalog';
+			foreach ($parents as $p) $out[] = "$p->id";
+			$out[] = $product->product_category_id;
+			$out[] = $product->id;
+			
+			return Application::getSeoUrl('/' . implode('/', $out));
 		}
 		
 		
