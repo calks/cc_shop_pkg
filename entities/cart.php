@@ -137,9 +137,11 @@
 				$item->cost_str = coreFormattingLibrary::formatCurrency($item->cost);
 				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : null;
 				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 50, 50, 'crop', $image_id ? 'jpeg' : 'png'); 	
-				$item->link = Application::getSeoUrl("/catalog/$item->product_category_id/$item->id");
+				$item->link = shopPkgHelperLibrary::getProductCatalogLink($item);
+				
 				$item->remove_link = Application::getSeoUrl("/{$this->getName()}/remove/$item->id");
 			}
+			
 			
 			return $cart_content;
 			

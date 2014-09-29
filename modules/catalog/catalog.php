@@ -36,32 +36,40 @@
 				$this->page_content = $document->content;
 			}
 			
-			$this->product_category_id = @(int)array_shift($params);
-			if ($this->product_category_id) {
+			
+			while ($params) {
+				$this->product_category_id = @(int)array_shift($params);
+					
 				$this->product_category = Application::getEntityInstance('product_category');
 				$this->product_category = $this->product_category->load($this->product_category_id);
 				if (!$this->product_category) return $this->terminate();
 				if (!$this->product_category->active) return $this->terminate();
-				$this->base_url .= "/$this->product_category_id";				
-				$this->listed_entity_name = 'product';
+				$this->base_url .= "/$this->product_category_id";
+				
 				$this->page_heading = $this->product_category->title;
 				$this->page_content = $this->product_category->description;
 				$breadcrumbs->addNode($this->base_url, $this->page_heading);
-				
-				$this->product_id = @(int)array_shift($params);
-				if ($this->product_id) {
-					$this->product = Application::getEntityInstance('product');
-					$this->product = $this->product->load($this->product_id);
-					if (!$this->product) return $this->terminate();
-					if (!$this->product->active) return $this->terminate();
-					
-					$this->base_url .= "/$this->product_category_id/$this->product_id";				
-					$this->action = 'detail';
-					$this->page_heading = $this->product->title;
-					$this->page_content = $this->product->description;
-					$breadcrumbs->addNode($this->base_url, $this->page_heading);
+
+				$has_products = $this->product_category->product_count != 0;
+				if ($has_products) {
+					$this->listed_entity_name = 'product';
+
+					$this->product_id = @(int)array_shift($params);
+					if ($this->product_id) {
+						$this->product = Application::getEntityInstance('product');
+						$this->product = $this->product->load($this->product_id);
+						if (!$this->product) return $this->terminate();
+						if (!$this->product->active) return $this->terminate();
+						
+						$this->base_url .= "/$this->product_category_id/$this->product_id";				
+						$this->action = 'detail';
+						$this->page_heading = $this->product->title;
+						$this->page_content = $this->product->description;
+						$breadcrumbs->addNode($this->base_url, $this->page_heading);
+					}						
 				}
 			}
+			
 			
         	
 			$method_name = 'task' . ucfirst($this->action);
@@ -87,6 +95,7 @@
         	$load_params = array();
         	if ($this->listed_entity_name=='product_category') {
         		$load_params['where'][] = "$table.active=1";
+        		$load_params['where'][] = $this->product_category_id ? "$table.parent_id=$this->product_category_id" : "($table.parent_id IS NULL OR $table.parent_id=0)";
         	}
         	else {
         		$load_params['where'][] = "$table.product_category_id=$this->product_category_id";
@@ -149,14 +158,19 @@
         	
         	imagePkgHelperLibrary::loadImages($category_or_array, 'image');
         	foreach($category_or_array as $item) {				
-        		$item->title = coreFormattingLibrary::plaintext($item->title);
-				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : 0;				
-				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 156, 100, 'crop', $image_id ? 'jpeg' : 'png');
 				$item->link = Application::getSeoUrl("$this->base_url/$item->id");
-				$item->description_short = coreFormattingLibrary::truncate($item->description, 100);				
+				$this->adjustProductAppearance($item);			
         	} 
         	
         	if (!$array_given) $category_or_array = array_shift($category_or_array);
+        }
+        
+        
+        protected function adjustCategoryAppearance($category) {
+        	$category->title = coreFormattingLibrary::plaintext($category->title);
+			$image_id = isset($category->image_list[0]) ? $category->image_list[0]->id : 0;				
+			$category->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 150, 150, 'crop', $image_id ? 'jpeg' : 'png');
+			$category->description_short = coreFormattingLibrary::truncate($category->description, 100);        	
         }
         
         
@@ -196,17 +210,22 @@
         	if (!$array_given) $product_or_array = array($product_or_array);
         	
         	imagePkgHelperLibrary::loadImages($product_or_array, 'image');
-        	foreach($product_or_array as $item) {				
-        		$item->title = coreFormattingLibrary::plaintext($item->title);
-				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : 0;				
-				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 150, 117, 'crop', $image_id ? 'jpeg' : 'png');
-				$item->image = imagePkgHelperLibrary::getThumbnailUrl($image_id, 320, 250, 'crop', $image_id ? 'jpeg' : 'png');
+        	foreach($product_or_array as $item) {
 				$item->link = Application::getSeoUrl("$this->base_url/$item->id");
-				$item->description_short = coreFormattingLibrary::truncate($item->description, 150);
-				$item->buy_link = Application::getSeoUrl("/cart/add/$item->id");
-        	} 
+				$item->buy_link = Application::getSeoUrl("/cart/add/$item->id");        		
+        		$this->adjustProductAppearance($item);
+        	}
         	
         	if (!$array_given) $product_or_array = array_shift($product_or_array);
+        }
+        
+        
+        protected function adjustProductAppearance($product) {
+        	$product->title = coreFormattingLibrary::plaintext($product->title);
+			$image_id = isset($product->image_list[0]) ? $product->image_list[0]->id : 0;				
+			$product->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 150, 150, 'crop', $image_id ? 'jpeg' : 'png');
+			$product->image = imagePkgHelperLibrary::getThumbnailUrl($image_id, 300, 300, 'crop', $image_id ? 'jpeg' : 'png');			
+			$product->description_short = coreFormattingLibrary::truncate($product->description, 150);
         }
         
         

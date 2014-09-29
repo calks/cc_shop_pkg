@@ -18,13 +18,14 @@
 	        <th>Удалить</th>
 	    </tr>
     
+    	    
 		{foreach key=key item=object from=$objects name=objectlist}
-	        {if $smarty.foreach.objectlist.first}
+	        {if $object->is_first}
 	            {assign var='up' value="0"}
 	        {else}
 	            {assign var='up' value="1"}
 	        {/if}
-	        {if $smarty.foreach.objectlist.last}
+	        {if $object->is_last}
 	            {assign var='down' value="0"}
 	        {else}
 	            {assign var='down' value="1"}
@@ -33,7 +34,7 @@
 	        	<td class="delete">
 	        		<img src="{$object->image_thumbnail}" alt="" >
 	        	</td>
-	        	<td>
+	        	<td style="padding-left:{$object->level*20+10}px">
 	        		{$object->title}
 	        	</td>
 	        	<td class="delete">
