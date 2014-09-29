@@ -113,7 +113,7 @@
 			
 			
 			$smarty->assign('cart_content', $cart->getContent());
-			$subtotal_str = coreFormattingLibrary::formatCurrency($cart->getSubtotal(), CURRENCY_LABEL);
+			$subtotal_str = coreFormattingLibrary::formatCurrency($cart->getSubtotal());
 			$smarty->assign('cart_subtotal_str', $subtotal_str);
 			
 			$smarty->assign('confirm_link', Application::getSeoUrl("/{$this->getName()}/confirm"));

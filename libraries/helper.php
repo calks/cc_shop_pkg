@@ -53,7 +53,7 @@
 			
 			foreach($order_or_array as $o) {
 				$o->created_str = coreFormattingLibrary::formatDate($o->created);
-				$o->amount_str = coreFormattingLibrary::formatCurrency($o->amount, CURRENCY_LABEL);
+				$o->amount_str = coreFormattingLibrary::formatCurrency($o->amount);
 				if (!$o->payment_method) continue;
 				$payment_connector = shopPkgHelperLibrary::getPaymentInterfaceConnector($o->payment_method);
 				$o->pay_link = $o->status=='new' ? $payment_connector->getPaymentUrl($o) : null;
@@ -86,8 +86,8 @@
 			self::loadProductData($data);
 			
 			foreach($data as $d) {
-				$d->price_str = coreFormattingLibrary::formatCurrency($d->price, CURRENCY_LABEL);
-				$d->cost_str = coreFormattingLibrary::formatCurrency($d->cost, CURRENCY_LABEL);
+				$d->price_str = coreFormattingLibrary::formatCurrency($d->price);
+				$d->cost_str = coreFormattingLibrary::formatCurrency($d->cost);
 				$mapping[$d->order_id]->items[] = $d;
 			}
 			

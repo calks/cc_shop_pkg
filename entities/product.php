@@ -83,7 +83,7 @@
         	$list = parent::load_list($params);
         	
         	foreach ($list as $item) {
-        		$item->price_str = coreFormattingLibrary::formatCurrency($item->price, CURRENCY_LABEL);
+        		$item->price_str = coreFormattingLibrary::formatCurrency($item->price);
         	}
         	
         	return $list;

@@ -23,8 +23,8 @@
 			$smarty->assign('cart_products_count_noun', $products_count_noun);
 			
 			
-			$smarty->assign('cart_subtotal', coreFormattingLibrary::formatCurrency($cart->getSubtotal(), CURRENCY_LABEL));
-			$smarty->assign('cart_total', coreFormattingLibrary::formatCurrency($cart->getTotal(), CURRENCY_LABEL));
+			$smarty->assign('cart_subtotal', coreFormattingLibrary::formatCurrency($cart->getSubtotal()));
+			$smarty->assign('cart_total', coreFormattingLibrary::formatCurrency($cart->getTotal()));
 			$smarty->assign('cart_link', Application::getSeoUrl("/cart"));
 			
 			$template_path = $this->getTemplatePath();
