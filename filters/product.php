@@ -4,9 +4,10 @@
 
         function add_fields() {
         	$category = Application::getEntityInstance('product_category');        	
-        	$this->addField(coreFormElementsLibrary::get('parent_select', 'search_product_category', array(
-        		'options' => $category->getProductParentSelect('-- Любой --')
-        	))); 
+        	
+        	$category_select = coreFormElementsLibrary::get('parent_select', 'search_product_category');
+        	$category_select->setOptions($category->getProductParentSelect('-- Любой раздел --'));
+        	$this->addField($category_select); 
         }
 
 

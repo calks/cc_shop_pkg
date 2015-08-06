@@ -27,25 +27,24 @@
         public function make_form(&$form) {
         	$form->addField(new THiddenField("id"));
         	
-        	$form->addField(coreFormElementsLibrary::get('edit', 'price'));
-            $form->addField(coreFormElementsLibrary::get('edit', 'title'));
+        	$form->addField(coreFormElementsLibrary::get('text', 'price'));
+            $form->addField(coreFormElementsLibrary::get('text', 'title'));
             $form->addField(coreFormElementsLibrary::get('rich_editor', 'description'));
             $form->addField(coreFormElementsLibrary::get('checkbox', 'active', array(
             	'value' => 1
             )));
             
             $category = Application::getEntityInstance('product_category');
-            $form->addField(coreFormElementsLibrary::get('parent_select', 'product_category_id', array(
-            	'options' => $category->getProductParentSelect('-- Не выбран --')
-            )));
+            $form->addField(coreFormElementsLibrary::get('parent_select', 'product_category_id')->setOptions($category->getProductParentSelect('-- Не выбран --')));
             
             $form->addField(new THiddenField("seq"));
 
-			$form->addField(imagePkgHelperLibrary::getField('image', $this->getName(), $this->id, array(			
-				'width' => 600,
-				'height' => 100,
-				'max_files' => 1
-			)));
+            $image_field = coreFormElementsLibrary::get('image', 'image');
+            $image_field->setEntityName($this->getName());
+            $image_field->setEntityId($this->id);
+            $image_field->setMaxFiles(1);
+            $form->addField($image_field);
+            
             
             
             return $form;

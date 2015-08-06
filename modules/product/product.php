@@ -10,15 +10,16 @@
 
 		protected function beforeListLoad(&$load_params) {
 			$filter = Application::getFilter($this->getObjectName());
-			$search_category = (int)Request::get('search_product_category');
-			if ($search_category) {
+			$search_category = Request::get('search_product_category');
+			
+			if (!is_null($search_category)) {
 				$filter->setValue('search_product_category', $search_category);
 				$filter->saveToSession();
 				$this->url_addition .= 'search_product_category=' .$search_category;
 			}
 			$filter->set_params($load_params);
 			$smarty = Application::getSmarty();
-			$smarty->assign('allow_sorting', $search_category != 0);
+			$smarty->assign('allow_sorting', $filter->getValue('search_product_category') != 0);
 			$smarty->assign('filter', $filter);
 			
 			$category = Application::getEntityInstance('product_category');

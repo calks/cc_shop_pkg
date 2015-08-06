@@ -154,25 +154,24 @@
         
         
         public function make_form(&$form) {        	
-            $form->addField(new THiddenField("id"));            
-            $form->addField(new THiddenField("seq"));
-            
-            $form->addField(coreFormElementsLibrary::get('parent_select', 'parent_id', array(
-            	'options' => $this->getCategoryParentSelect('Верхний уровень', $this->id)
-            )));
+            $form->addField(coreFormElementsLibrary::get('hidden', 'id'));
+            $form->addField(coreFormElementsLibrary::get('hidden', 'seq'));            
             
             
-            $form->addField(coreFormElementsLibrary::get('edit', 'title'));
+            $form->addField(coreFormElementsLibrary::get('parent_select', 'parent_id')->setOptions($this->getCategoryParentSelect('Верхний уровень', $this->id)));
+            
+            
+            $form->addField(coreFormElementsLibrary::get('text', 'title'));
             $form->addField(coreFormElementsLibrary::get('rich_editor', 'description'));
             $form->addField(coreFormElementsLibrary::get('checkbox', 'active', array(
             	'value' => 1
             )));
             
-			$form->addField(imagePkgHelperLibrary::getField('image', $this->getName(), $this->id, array(			
-				'width' => 600,
-				'height' => 100,
-				'max_files' => 1
-			)));
+            $image_field = coreFormElementsLibrary::get('image', 'image');
+            $image_field->setEntityName($this->getName());
+            $image_field->setEntityId($this->id);
+            $image_field->setMaxFiles(1);
+            $form->addField($image_field);
             
             return $form;
         }
