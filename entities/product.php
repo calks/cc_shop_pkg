@@ -42,7 +42,8 @@
             $image_field = coreFormElementsLibrary::get('image', 'image');
             $image_field->setEntityName($this->getName());
             $image_field->setEntityId($this->id);
-            $image_field->setMaxFiles(1);
+            $image_field->setHeight(300);
+            //$image_field->setMaxFiles(1);
             $form->addField($image_field);
             
             
