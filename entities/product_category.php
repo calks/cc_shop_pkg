@@ -10,6 +10,7 @@
 		
 		protected static $_tree;
 		protected static $_parent_mapping;
+		protected static $_child_mapping;
 				
 		public function getTableName() {
 			return "product_category";
@@ -37,20 +38,42 @@
         }
         
         
+        public function getAllChildren($item_id) {        	
+        	$child_maping = $this->getChildMapping();
+        	$children = isset($child_maping[$item_id]) ? $child_maping[$item_id] : array();
+        	        	        	
+        	if (!$children) return array();
+        	$out = $children;
+        	foreach ($children as $child) {
+        		$grand_children = $this->getAllChildren($child->id);
+        		if ($grand_children) $out = array_merge($out, $grand_children); 
+        	}
+        	
+        	return $out;
+		}
+        
+        
         protected function invalidateTreeData() {
         	self::$_tree = null;
         	self::$_parent_mapping = null;
+        	self::$_child_mapping = null;
         }
         
-        protected function getTree() {
+        public function getTree() {
         	$this->loadTreeData();
         	return self::$_tree;
         }
         
-        protected function getParentMapping() {
+        public function getParentMapping() {
         	$this->loadTreeData();
         	return self::$_parent_mapping;
         }
+        
+        public function getChildMapping() {
+        	$this->loadTreeData();
+        	return self::$_child_mapping;
+        }
+        
         
         
         protected function loadTreeData() {
@@ -86,17 +109,24 @@
         	$current_parent_id = -1;
         	        	
         	$reindexed = array();
-        	        	
+
+        	self::$_child_mapping = array();
+        	
         	foreach ($data as $d) {
         		$reindexed[$d->id] = $d;        		
+        		
         		$d->children = array();
+        		
         		if($d->parent_id != $current_parent_id) {
         			$token = &$mapping[$d->parent_id];
         			$current_parent_id = $d->parent_id;
         		}
         		$mapping[$d->id] = &$d->children;        		
         		$token[] = $d;
+        		
+        		self::$_child_mapping[$d->id] = &$d->children;
         	}
+        	
         	
         	self::$_parent_mapping = array();
         	foreach ($data as $d) {
@@ -156,10 +186,8 @@
         public function make_form(&$form) {        	
             $form->addField(coreFormElementsLibrary::get('hidden', 'id'));
             $form->addField(coreFormElementsLibrary::get('hidden', 'seq'));            
-            
-            
+                        
             $form->addField(coreFormElementsLibrary::get('parent_select', 'parent_id')->setOptions($this->getCategoryParentSelect('Верхний уровень', $this->id)));
-            
             
             $form->addField(coreFormElementsLibrary::get('text', 'title'));
             $form->addField(coreFormElementsLibrary::get('rich_editor', 'description'));

@@ -4,23 +4,54 @@
 
     class shopPkgCatalogModule extends coreBaseModule {
     	
-    	protected $action;
+    	/*protected $action;
     	protected $product_category_id;
     	protected $product_category;
+    	
+    	protected $page_num;
     	
     	protected $product_id;
     	protected $product;
     	
-    	protected $listed_entity_name;
-    	protected $base_url;
+    	/*protected $listed_entity_name;
+    	protected $base_url;*/
     	
-    	protected $page_heading;
-    	protected $page_content;
+    	/*protected $page_heading;
+    	protected $page_content;*/
 
         public function run($params=array()) {        	
 			$page = Application::getPage();
 			
-			$this->base_url = '/' . $this->getName();
+			$params_parsed = array();
+			while($params) {
+				$param_name = @array_shift($params);
+				$param_value = @(int)array_shift($params);
+				if (!$param_name) continue;
+				$params_parsed[$param_name] = $param_value;				
+			}
+			
+			if (isset($params_parsed['product'])) {
+				$this->task = 'product_detail';
+			}
+			else {
+				$this->task = 'product_list';
+			}
+						
+			
+			$this->runTask($this->task, $params_parsed);				
+			return $this->returnResponse();			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			
 			$this->action = 'list';
 			$this->listed_entity_name = 'product_category';
@@ -85,68 +116,107 @@
         }
         
         
-        protected function taskList($params=array()) {
+        protected function taskProductList($params=array()) {
         	
-        	$current_page = (int)Request::get('page', 1);
-        	if ($current_page < 1) return $this->terminate();
+        	$product = Application::getEntityInstance('product');
+        	$product_load_params = array();
         	
-        	$entity = Application::getEntityInstance($this->listed_entity_name);
-        	$table = $entity->getTableName();
-        	$load_params = array();
-        	if ($this->listed_entity_name=='product_category') {
-        		$load_params['where'][] = "$table.active=1";
-        		$load_params['where'][] = $this->product_category_id ? "$table.parent_id=$this->product_category_id" : "($table.parent_id IS NULL OR $table.parent_id=0)";
-        	}
-        	else {
-        		$load_params['where'][] = "$table.product_category_id=$this->product_category_id";
-        		$load_params['where'][] = "$table.active=1";
-        	}
-        	        	
-        	if (Application::filterExists($this->listed_entity_name)) {
-        		$filter = Application::getFilter($this->listed_entity_name);        		
-        		$filter->set_params($load_params);
+        	$category_id = isset($params['category']) ? (int)$params['category'] : null;
+        	if ($category_id) {
+        		
+        		$category = Application::getEntityInstance('product_category');
+        		$category = $category->load($category_id);
+        		if (!$category) return $this->terminate();
+        		
+        		$category_ids = array($category_id);
+        		foreach ($category->getAllChildren($category_id) as $child) {
+        			$category_ids[] = $child->id;
+        		}
+        		        		
+        		$product_table = $product->getTableName();
+        		$category_ids = implode(',', $category_ids);
+        		
+        		$product_load_params['where'][] = "$product_table.product_category_id IN($category_ids)";
+
         	}
         	
-        	$total_items = $entity->count_list($load_params);
+        	$total_products = $product->count_list($product_load_params);
+        	$current_page = isset($params['page']) ? (int)$params['page'] : 1;
+        	if ($current_page < 1) $current_page = 1;
+
 
         	$pagenav_block = null;
-        	if ($total_items > CATALOG_MODULE_ITEMS_PER_PAGE) {
+        	if ($total_products > CATALOG_MODULE_ITEMS_PER_PAGE) {
         		$pagenav_block = Application::getBlock('pagenav');        		
-        		$pagenav_block->setPageLinkTemplate("$this->base_url?page=%page%");
-        		$pagenav_block->setItemsTotal($total_items);
+        		$pagenav_block->setPageLinkTemplate("{$this->getName()}/category/$category_id/page/%page%");
+        		$pagenav_block->setItemsTotal($total_products);
         		$pagenav_block->setItemsPerPage(CATALOG_MODULE_ITEMS_PER_PAGE);	
         		$pagenav_block->setCurrentPage($current_page);
         	}
         	
-        	$total_pages = ceil($total_items/CATALOG_MODULE_ITEMS_PER_PAGE);
+        	$total_pages = ceil($total_products/CATALOG_MODULE_ITEMS_PER_PAGE);
         	
         	if ($total_pages && $current_page > $total_pages) {
         		return $this->terminate();
         	}
         	
-        	$load_params['limit'] = CATALOG_MODULE_ITEMS_PER_PAGE;
-        	$load_params['offset'] = CATALOG_MODULE_ITEMS_PER_PAGE * ($current_page-1);
+        	$product_load_params['limit'] = CATALOG_MODULE_ITEMS_PER_PAGE;
+        	$product_load_params['offset'] = CATALOG_MODULE_ITEMS_PER_PAGE * ($current_page-1);
         	
-        	$items = $entity->load_list($load_params);
-        	
-        	if ($this->listed_entity_name=='product_category') {
-        		$this->prepareCategory($items);
-        	}
-        	else {
-        		$this->prepareProduct($items);
-        	}       	
+        	$products = $product->load_list($product_load_params);
+        	$this->prepareProduct($products);
         	
 			$smarty = Application::getSmarty();
-			$smarty->assign('items', $items);
+			$smarty->assign('products', $products);
 			$smarty->assign('pagenav_block', $pagenav_block);
 			
-			$list_template_path = Application::getSitePath() . $this->getTemplatePath("lists/$this->listed_entity_name");
-			$smarty->assign('list_template_path', $list_template_path);
 			
-			$template_path = $this->getTemplatePath($this->action);						
-			return $smarty->fetch($template_path);   
-        	
+			switch($total_products) {
+				case 0:
+					$count_string = 'В этом разделе нет товаров';
+					break;
+				case 1:
+					$count_string = '';
+					break;
+				default:
+					$first = CATALOG_MODULE_ITEMS_PER_PAGE * ($current_page-1) + 1;
+					$last = $first + $total_products - 1;
+					$count_string = "Показаны товары $first-$last из $total_products";			
+			}
+			
+			
+			$smarty->assign('count_string', $count_string);
+			
+			$template_path = $this->getTemplatePath($this->task);			
+			$this->html = $smarty->fetch($template_path);   
+       	
         }
+        
+        
+		protected function taskProductDetail($params=array()) {
+        	
+        	$product = Application::getEntityInstance('product');
+        	$product_load_params = array();
+
+        	$product_id = isset($params['product']) ? (int)$params['product'] : null;
+        	if (!$product_id) return $this->terminate();
+        	
+        	
+        		
+       		$product = Application::getEntityInstance('product');
+       		$product = $product->load($product_id);
+        	if (!$product) return $this->terminate();
+        		
+        	$this->prepareProduct($product);
+        	
+			$smarty = Application::getSmarty();
+			$smarty->assign('product', $product);
+			
+			$template_path = $this->getTemplatePath($this->task);		
+			$this->html = $smarty->fetch($template_path);   
+       	
+        }
+        
         
         
         protected function prepareCategory(&$category_or_array) {
@@ -211,8 +281,8 @@
         	
         	imagePkgHelperLibrary::loadImages($product_or_array, 'image');
         	foreach($product_or_array as $item) {
-				$item->link = Application::getSeoUrl("$this->base_url/$item->id");
-				$item->buy_link = Application::getSeoUrl("/cart/add/$item->id");        		
+				$item->link = Application::getSeoUrl("/{$this->getName()}/product/$item->id");
+				$item->buy_link = Application::getSeoUrl("/cart/add/$item->id");				        		
         		$this->adjustProductAppearance($item);
         	}
         	
@@ -223,19 +293,29 @@
         protected function adjustProductAppearance($product) {
         	$product->title = coreFormattingLibrary::plaintext($product->title);
 			$image_id = isset($product->image_list[0]) ? $product->image_list[0]->id : 0;				
-			$product->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 150, 150, 'crop', $image_id ? 'jpeg' : 'png');
-			$product->image = imagePkgHelperLibrary::getThumbnailUrl($image_id, 300, 300, 'crop', $image_id ? 'jpeg' : 'png');			
-			$product->description_short = coreFormattingLibrary::truncate($product->description, 150);
+			$product->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 350, 240, 'crop', $image_id ? 'jpeg' : 'png');
+			$product->description_short = coreFormattingLibrary::truncate($product->description, 50);
+			
+			$product->gallery = array();
+			if (!$product->image_list) {
+				$gallery_item = new stdClass();
+				$gallery_item->slide = imagePkgHelperLibrary::getThumbnailUrl(0, 547, 547, 'crop', 'png');
+				$gallery_item->slide_thumb = imagePkgHelperLibrary::getThumbnailUrl(0, 80, 80, 'crop', 'png');
+				$product->gallery[] = $gallery_item;
+			}
+			else {
+				foreach($product->image_list as $img) {
+					$gallery_item = new stdClass();
+					$gallery_item->slide = imagePkgHelperLibrary::getThumbnailUrl($img->id, 547, 547, 'crop', 'jpeg');
+					$gallery_item->slide_thumb = imagePkgHelperLibrary::getThumbnailUrl($img->id, 90, 90, 'crop', 'jpeg');
+				$product->gallery[] = $gallery_item;
+				}
+			}
+			
+			
+			
         }
         
-        
-        protected function taskDetail($params=array()) {
-        	$smarty = Application::getSmarty();
-        	$this->prepareProduct($this->product);
-        	$smarty->assign('item', $this->product);
-			$template_path = $this->getTemplatePath($this->action);						
-			return $smarty->fetch($template_path);
-        }
-        
+
 
     }
