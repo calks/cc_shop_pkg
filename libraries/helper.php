@@ -24,21 +24,19 @@
 		}
 		
 		
-		public static function getPaymentInterfaceConnector($connector_name='robokassa') {
+		public static function getPaymentInterfaceConnector($connector_name='cash') {
 			if (!$connector_name) {
 				throw new Exception("No $connector_name supplied", 999);
 			}
-			$addon_name = $connector_name . '_connector';
-			$addons_available = coreResourceLibrary::getAvailableFiles(APP_RESOURCE_TYPE_ADDON, 'payment_interface', "/$addon_name.php");
-			
-			if (!$addons_available) {
+
+			$connector_class = coreResourceLibrary::getEffectiveClass('payment_connector', $connector_name);
+						
+			if (!$connector_class) {
 				throw new Exception("No $connector_name interface connector", 999);
 				return null;
 			}
-			$file_path = coreResourceLibrary::getAbsolutePath($addons_available[$addon_name]->path);
-			
-			$class_name = $addons_available[$addon_name]->class;
-			$connector = new $class_name();
+
+			$connector = new $connector_class();
 			$connector->loadSettings();
 			
 			return $connector;

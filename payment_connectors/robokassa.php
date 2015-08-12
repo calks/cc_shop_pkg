@@ -1,6 +1,6 @@
 <?php
 
-	class shopPkgPaymentInterfaceAddonRobokassaConnector extends shopPkgPaymentInterfaceAddonBaseConnector {
+	class shopPkgRobokassaPaymentConnector extends shopPkgBasePaymentConnector {
 		
 		protected $xml_interface_payment_state_url;
 		

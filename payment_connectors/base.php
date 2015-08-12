@@ -1,6 +1,6 @@
 <?php
 
-	abstract class shopPkgPaymentInterfaceAddonBaseConnector {
+	abstract class shopPkgBasePaymentConnector {
 		
 		protected $test_mode;
 		
