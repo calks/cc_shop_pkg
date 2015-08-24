@@ -135,8 +135,8 @@
 			
 			foreach($cart_content as $item) {
 				$item->cost_str = coreFormattingLibrary::formatCurrency($item->cost);
-				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : null;
-				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 50, 50, 'crop', $image_id ? 'jpeg' : 'png'); 	
+				$image_id = isset($item->image_list[0]) ? $item->image_list[0]->id : 0;
+				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 90, 90, 'crop', $image_id ? 'jpeg' : 'png'); 	
 				$item->link = shopPkgHelperLibrary::getProductCatalogLink($item);
 				
 				$item->remove_link = Application::getSeoUrl("/{$this->getName()}/remove/$item->id");

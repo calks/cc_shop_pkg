@@ -78,7 +78,7 @@
 
 					</div>
 
-					<div itemprop="description">
+					<div class="description" itemprop="description">
 						{$product->description}
 					</div>
 
@@ -98,9 +98,17 @@
 	
 					
 					<div class="product_meta">
-						<span class="sku_wrapper">SKU: <span itemprop="sku" class="sku">100241194</span>.</span>	
-						<span class="posted_in">Categories: <a rel="tag" href="http://macaroon.themeplayers.net/product-category/macaroon/almond/">Almond</a>, <a rel="tag" href="http://macaroon.themeplayers.net/product-category/macaroon/">Macaron</a>.</span>
-						<span class="tagged_as">Tags: <a rel="tag" href="http://macaroon.themeplayers.net/product-tag/finetti/">Finetti</a>, <a rel="tag" href="http://macaroon.themeplayers.net/product-tag/macaroon/">Macaroon</a>.</span>	
+						{*<span class="sku_wrapper">SKU: <span itemprop="sku" class="sku">100241194</span>.</span>*}
+						{if $product->categories}
+							<span class="posted_in">
+								Раздел каталога: 
+								{foreach item=cat from=$product->categories name=cat_loop}
+									<a rel="tag" href="{$cat->link}">{$cat->title}</a>
+									{if !$smarty.foreach.cat_loop.last}/{/if}
+								{/foreach}
+							</span>
+						{/if}	
+						{*<span class="tagged_as">Tags: <a rel="tag" href="http://macaroon.themeplayers.net/product-tag/finetti/">Finetti</a>, <a rel="tag" href="http://macaroon.themeplayers.net/product-tag/macaroon/">Macaroon</a>.</span>*}	
 					</div>
 
 				</div>

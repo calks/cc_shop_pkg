@@ -99,7 +99,7 @@
 			
 			$mapping = array();
 			foreach($order_items as $item) {
-				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl(0, 50, 50, 'crop', 'png');
+				$item->thumbnail = imagePkgHelperLibrary::getThumbnailUrl(0, 90, 90, 'crop', 'png');
 				$item->catalog_link = null;
 				if (!$item->entity_id) continue;
 				if (!$item->entity_name) continue;
@@ -128,7 +128,7 @@
 				
 				foreach($list as $p) {
 					$image_id = isset($p->image_list[0]) ? $p->image_list[0]->id : 0;
-					$thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 50, 50, 'crop', $image_id ? 'jpeg' : 'png');
+					$thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 90, 90, 'crop', $image_id ? 'jpeg' : 'png');
 					
 					$catalog_link = $entity_name == 'product' ? self::getProductCatalogLink($p) : '';
 					//$catalog_link = $entity_name == 'product' ? Application::getSeoUrl("/catalog/$p->product_category_id/$p->id") : '';
@@ -146,14 +146,16 @@
 		
 		
 		public static function getProductCatalogLink($product) {
-			$category = Application::getEntityInstance('product_category');
+			/*$category = Application::getEntityInstance('product_category');
 			$parents = $category->getAllParents($product->product_category_id);
 			$out[] = 'catalog';
 			foreach ($parents as $p) $out[] = "$p->id";
 			$out[] = $product->product_category_id;
 			$out[] = $product->id;
 			
-			return Application::getSeoUrl('/' . implode('/', $out));
+			return Application::getSeoUrl('/' . implode('/', $out));*/
+			
+			return Application::getSeoUrl("/catalog/product/$product->id");
 		}
 		
 		

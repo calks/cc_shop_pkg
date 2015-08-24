@@ -41,78 +41,6 @@
 			$this->runTask($this->task, $params_parsed);				
 			return $this->returnResponse();			
 			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			$this->action = 'list';
-			$this->listed_entity_name = 'product_category';
-			
-			$this->page_heading = "Каталог";
-			
-			$breadcrumbs = Application::getBreadcrumbs();
-			$breadcrumbs->addNode($this->base_url, $this->page_heading);
-			
-			$document = corePagePropertiesHelperLibrary::getDocument();			
-			if ($document) {
-				$this->page_heading = $document->title;
-				$this->page_content = $document->content;
-			}
-			
-			
-			while ($params) {
-				$this->product_category_id = @(int)array_shift($params);
-					
-				$this->product_category = Application::getEntityInstance('product_category');
-				$this->product_category = $this->product_category->load($this->product_category_id);
-				if (!$this->product_category) return $this->terminate();
-				if (!$this->product_category->active) return $this->terminate();
-				$this->base_url .= "/$this->product_category_id";
-				
-				$this->page_heading = $this->product_category->title;
-				$this->page_content = $this->product_category->description;
-				$breadcrumbs->addNode($this->base_url, $this->page_heading);
-
-				$has_products = $this->product_category->product_count != 0;
-				if ($has_products) {
-					$this->listed_entity_name = 'product';
-
-					$this->product_id = @(int)array_shift($params);
-					if ($this->product_id) {
-						$this->product = Application::getEntityInstance('product');
-						$this->product = $this->product->load($this->product_id);
-						if (!$this->product) return $this->terminate();
-						if (!$this->product->active) return $this->terminate();
-						
-						$this->base_url .= "/$this->product_category_id/$this->product_id";				
-						$this->action = 'detail';
-						$this->page_heading = $this->product->title;
-						$this->page_content = $this->product->description;
-						$breadcrumbs->addNode($this->base_url, $this->page_heading);
-					}						
-				}
-			}
-			
-			
-        	
-			$method_name = 'task' . ucfirst($this->action);
-			if (!method_exists($this, $method_name)) return $this->terminate();
-			
-			$page = corePagePropertiesHelperLibrary::getDocument();
-			$smarty = Application::getSmarty();
-			$smarty->assign('page_heading', $this->page_heading);
-			$smarty->assign('page_content', $this->page_content);
-			$smarty->assign('breadcrumbs_block', $this->product_category_id ? Application::getBlock('breadcrumbs') : null);
-			
-			return call_user_func(array($this, $method_name), $params);	
         }
         
         
@@ -200,8 +128,6 @@
 
         	$product_id = isset($params['product']) ? (int)$params['product'] : null;
         	if (!$product_id) return $this->terminate();
-        	
-        	
         		
        		$product = Application::getEntityInstance('product');
        		$product = $product->load($product_id);
@@ -228,16 +154,16 @@
         	
         	imagePkgHelperLibrary::loadImages($category_or_array, 'image');
         	foreach($category_or_array as $item) {				
-				$item->link = Application::getSeoUrl("$this->base_url/$item->id");
-				$this->adjustProductAppearance($item);			
+				$item->link = Application::getSeoUrl("{$this->getName()}/category/$item->id");
+				$this->adjustCategoryAppearance($item);			
         	} 
         	
         	if (!$array_given) $category_or_array = array_shift($category_or_array);
         }
         
         
-        protected function adjustCategoryAppearance($category) {
-        	$category->title = coreFormattingLibrary::plaintext($category->title);
+        protected function adjustCategoryAppearance($category) {        	
+        	//$category->title = coreFormattingLibrary::plaintext($category->title);
 			$image_id = isset($category->image_list[0]) ? $category->image_list[0]->id : 0;				
 			$category->thumbnail = imagePkgHelperLibrary::getThumbnailUrl($image_id, 150, 150, 'crop', $image_id ? 'jpeg' : 'png');
 			$category->description_short = coreFormattingLibrary::truncate($category->description, 100);        	

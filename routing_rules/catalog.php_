@@ -1,0 +1,163 @@
+<?php
+
+	class shopPkgCatalogRoutingRule {
+		
+		protected static $category_urls = array();
+		protected static $category_url_lookup;
+		
+        public function seoToInternal(URL $seo_url) {        	
+            $address = $seo_url->getAddress();
+            
+            $address_parts = explode('/', $address);
+            $first_part = @array_shift($address_parts);
+
+            
+            if ($first_part=='catalog') {
+            	            	
+            	print_r($this->getCategoryUrlLookup());
+            	die();
+            	
+        		$new_address = array('catalog');
+        		$category = Application::getEntityInstance('product_category');
+        		$branch = $category->getTree();
+        			        			
+				while($part=array_shift($address_parts)) {					
+					/*if (preg_match('/\.*\-(?P<category_id>\d+)$/', $part, $matches)) {
+						$category_id = 
+					}*/
+					
+					$found = false;        				
+					foreach ($branch as $item) {
+						if ($item->id == $category_id) {
+							$branch = $item->children;
+       						$url_part = coreFormattingLibrary::getUrlSafeString($item->title);        						
+       						$new_address[] = $url_part;
+       						$new_address_str = implode('/', $new_address);
+       						if (isset(self::$category_urls[$new_address_str]) && self::$category_urls[$new_address_str] != $item->id) {
+       							array_pop($new_address);
+       							$new_address[] = $url_part . "-$item->id";
+       						}
+       						$new_address_str = implode('/', $new_address);
+       						self::$category_urls[$new_address_str] = $item->id;
+       						$found = true;
+       						break; 
+       					}
+       				}
+      					if (!$found) {
+       					return false;
+       				}
+       			}
+            	
+            	
+            	die();
+            	//$seo_url->setAddress(implode('/', $address_parts));
+            	return $seo_url;	
+            }
+            
+            return false;
+        }
+
+
+        public function internalToSeo(URL $internal_url) {       
+        	
+        	$address = trim($internal_url->getAddress(), ' /');
+        	        	
+        	$address_parts = explode('/', $address);
+        	$first_part = @array_shift($address_parts); 
+        	
+        	
+        	switch ($first_part) {
+        		case '':
+        			return $internal_url;
+        		case 'product_category':
+        			$new_address = array('catalog');
+        			$category = Application::getEntityInstance('product_category');
+        			$branch = $category->getTree();
+        			        			
+        			while($category_id=array_shift($address_parts)) {
+        				$found = false;        				
+        				foreach ($branch as $item) {
+        					if ($item->id == $category_id) {
+        						$branch = $item->children;
+        						$url_part = coreFormattingLibrary::getUrlSafeString($item->title);        						
+        						$new_address[] = $url_part;
+        						$new_address_str = implode('/', $new_address);
+        						if (isset(self::$category_urls[$new_address_str]) && self::$category_urls[$new_address_str] != $item->id) {
+        							array_pop($new_address);
+        							$new_address[] = $url_part . "-$item->id";
+        						}
+        						$new_address_str = implode('/', $new_address);
+        						self::$category_urls[$new_address_str] = $item->id;
+        						$found = true;
+        						break; 
+        					}
+        				}
+       					if (!$found) {
+        					return $internal_url;
+        				}
+        			}
+        			
+        			
+        			$internal_url->setAddress(implode('/', $new_address));
+        			print_r(implode('/', $new_address));
+        			break; 
+
+        		case 'product_category':
+        			
+        			break;
+        			
+        	}
+        	
+
+            return $internal_url;
+        }        
+        
+        
+        /*protected function getIdToUrlPartMapping() {
+        	if (is_null(self::$category_url_part_mapping)) {
+        		
+			foreach ($category_tree as $item) {
+				//echo $this->catalog_base_url . $item->internal_url.'<br>';
+				$item->link = Application::getSeoUrl($this->catalog_base_url . $item->internal_url);
+				$this->addLinks($item->children);
+			}
+        		
+        		
+        		
+        		
+        		
+        		$category = Application::getEntityInstance('product_category');
+        		$category_table = $category->getTableName();
+        		$db = Application::getDb();
+        		$data = $db->executeSelectAllObjects("
+        			SELECT id, title 
+        			FROM $category_table
+        			ORDER BY $id
+        		");
+        		
+        		foreach ()
+        	}
+        	
+        	return self::$category_url_part_mapping;
+        }*/
+        
+        
+        protected function getCategoryUrlLookup() {
+        	if (is_null(self::$category_url_lookup)) {
+        		self::$category_url_lookup = array();
+        		$category = Application::getEntityInstance('product_category');
+        		$branch = $category->getTree();
+        		$this->addCategoryUrlLookupItems($branch);
+        	}
+        	
+        	return self::$category_url_lookup;
+        }
+        
+        
+        protected function addCategoryUrlLookupItems($branch) {
+        	
+        }
+		
+	}
+	
+	

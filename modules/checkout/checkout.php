@@ -330,7 +330,7 @@
 		
 		
 		protected function choosePaymentMethod() {
-			return 'robokassa';
+			return 'cash';
 		}
 				
 		protected function createNewOrder($cart) {

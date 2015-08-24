@@ -14,7 +14,7 @@
 		
 		public function run($params=array()) {
 			
-			shopPkgHelperLibrary::getPaymentInterfaceConnector('robokassa');
+			shopPkgHelperLibrary::getPaymentInterfaceConnector('cash');
 			
 			$this->task = @array_shift($params);
 			if (!$this->task) $this->task = 'list_content';
@@ -98,6 +98,7 @@
 			$smarty->assign('cart_subtotal_str', $subtotal_str);
 			
 			$smarty->assign('checkout_link', Application::getSeoUrl("/checkout"));
+			$smarty->assign('update_link', Application::getSeoUrl("/{$this->getName()}/update"));
 			$smarty->assign('continue_link', $this->getContinueLink());
 			
 			$template_path = $this->getTemplatePath($this->task);
@@ -153,6 +154,18 @@
 		
 		
 		protected function taskUpdate($params=array()) {
+			$cart = shopPkgHelperLibrary::getCartInstance();
+			$quantity = isset($_REQUEST['quantity']) ? $_REQUEST['quantity'] : array();
+
+			foreach ($quantity as $product_id=>$new_quantity) {
+				if ($cart->isInCart($product_id)) {
+					$cart->setProductQuantity($product_id, (int)$new_quantity);
+				}				
+			}
+			
+			if (!$this->isAjaxRequest()) {
+				Redirector::redirect(Application::getSeoUrl("/" . $this->getName()));
+			};			
 			
 		}
 		
