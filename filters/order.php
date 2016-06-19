@@ -9,14 +9,17 @@
         		'options' => $order->getStatusOptions()
         	)));
         	
-        	$this->addField(new TEditField('search_keyword', ''));
+        	$this->addField(coreFormElementsLibrary::get('text', 'search_keyword'));
+        	
         	$limit_options = array(        		
         		20 => '20',
         		50 => '50',
         		100 => '100',
         		'all' => 'все'
         	);
-        	$this->addField(new TSelectField('search_limit', '', $limit_options));
+        	$limit_field = coreFormElementsLibrary::get('select', 'search_limit');
+        	$limit_field->setOptions($limit_options);
+        	$this->addField($limit_field);
         	
         }
         

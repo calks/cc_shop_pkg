@@ -25,19 +25,17 @@
         
 
         public function make_form(&$form) {
-        	$form->addField(new THiddenField("id"));
+        	$form->addField(coreFormElementsLibrary::get('hidden', 'id'));
         	
         	$form->addField(coreFormElementsLibrary::get('text', 'price'));
             $form->addField(coreFormElementsLibrary::get('text', 'title'));
             $form->addField(coreFormElementsLibrary::get('rich_editor', 'description'));
-            $form->addField(coreFormElementsLibrary::get('checkbox', 'active', array(
-            	'value' => 1
-            )));
+            $form->addField(coreFormElementsLibrary::get('checkbox', 'active')->setValue(1));
             
             $category = Application::getEntityInstance('product_category');
             $form->addField(coreFormElementsLibrary::get('parent_select', 'product_category_id')->setOptions($category->getProductParentSelect('-- Не выбран --')));
             
-            $form->addField(new THiddenField("seq"));
+            $form->addField(coreFormElementsLibrary::get('hidden', 'seq'));
 
             $image_field = coreFormElementsLibrary::get('image', 'image');
             $image_field->setEntityName($this->getName());
