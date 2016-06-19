@@ -1,6 +1,6 @@
 <?php
 
-	class shopPkgOrderManagementModule extends coreCrudBaseModule {
+	class shopPkgOrderManagementModule extends adminPanelPkgBaseModule {
 		
 		protected $for_user;
 				
@@ -37,7 +37,7 @@
 				$entity = Application::getEntityInstance($this->getObjectName());
 				$table = $entity->getTableName();
 				$load_params['where'][] = "$table.user_id={$this->for_user->id}";				
-				$smarty->assign('subtitle', "Заказы пользователя {$this->for_user->name} {$this->for_user->family_name}");
+				$smarty->assign('subtitle', "Заказы пользователя {$this->for_user->name} {$this->for_user->name}");
 			}
 			
 			

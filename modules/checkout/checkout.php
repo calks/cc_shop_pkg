@@ -339,8 +339,8 @@
 			$order->user_id = $this->user_logged->id;
 			$order->status = 'new';
 			$order->amount = $cart->getTotal();
-			$order->user_name = $this->user_logged->name;
-			$order->user_family_name = $this->user_logged->family_name;
+			$order->user_name = $this->user_logged->first_name;
+			$order->user_family_name = $this->user_logged->last_name;
 			$order->user_email = $this->user_logged->email;
 			$order->payment_method = $this->choosePaymentMethod();
 			

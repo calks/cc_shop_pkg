@@ -90,8 +90,8 @@
 			$params['from'][] = "
 				LEFT JOIN $user_table $user_alias ON $user_alias.id = $table.user_id
 			";
-			$params['fields'][] = "IF($user_alias.name IS NOT NULL, $user_alias.name, $table.user_name) AS user_name";
-			$params['fields'][] = "IF($user_alias.family_name IS NOT NULL, $user_alias.family_name, $table.user_family_name) AS user_family_name";
+			$params['fields'][] = "IF($user_alias.first_name IS NOT NULL, $user_alias.first_name, $table.user_name) AS user_name";
+			$params['fields'][] = "IF($user_alias.last_name IS NOT NULL, $user_alias.last_name, $table.user_family_name) AS user_family_name";
 			$params['fields'][] = "IF($user_alias.email IS NOT NULL, $user_alias.email, $table.user_email) AS user_email";
 			
 			$list = parent::load_list($params);

@@ -5,9 +5,9 @@
         function add_fields() {
         	$order = Application::getEntityInstance('order');
         	
-        	$this->addField(coreFormElementsLibrary::get('checkbox_collection', 'search_status', array(
-        		'options' => $order->getStatusOptions()
-        	)));
+        	$status_field = coreFormElementsLibrary::get('checkbox_collection', 'search_status');
+        	$status_field->setOptions($order->getStatusOptions());
+        	$this->addField($status_field);
         	
         	$this->addField(coreFormElementsLibrary::get('text', 'search_keyword'));
         	
