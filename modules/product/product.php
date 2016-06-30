@@ -14,7 +14,6 @@
 			
 			if (!is_null($search_category)) {
 				$filter->setValue('search_product_category', $search_category);
-				//$filter->saveToSession();
 				$this->url_addition .= 'search_product_category=' .$search_category;
 			}
 			$filter->set_params($load_params);
